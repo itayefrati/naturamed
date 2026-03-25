@@ -1,0 +1,21 @@
+// Maps URL slugs to DB category values and display labels
+export const CATEGORY_MAP: Record<string, { label: string; dbValue: string; emoji: string }> = {
+  'beauty':               { label: 'Beauty',                 dbValue: 'Beauty',                emoji: '🌸' },
+  'anti-aging':           { label: 'Anti-Aging',             dbValue: 'Anti-Aging',             emoji: '🌿' },
+  'brain-health':         { label: 'Brain Health',           dbValue: 'Brain Health',           emoji: '🧠' },
+  'reproductive-health':  { label: 'Reproductive Health',    dbValue: 'Reproductive Health',    emoji: '🌺' },
+  'sleep':                { label: 'Sleep',                  dbValue: 'Sleep',                  emoji: '🌙' },
+  'oral-health':          { label: 'Oral Health',            dbValue: 'Oral Health',            emoji: '🦷' },
+  'parasite-cleanse':     { label: 'Parasite Cleanse',       dbValue: 'Parasite Cleanse',       emoji: '🍃' },
+  'vitamins':             { label: 'Vitamins',               dbValue: 'Vitamins',               emoji: '🌱' },
+  'allergies':            { label: 'Allergies',              dbValue: 'Allergies',              emoji: '🤧' },
+  'mental-wellness':      { label: 'Mental Wellness',        dbValue: 'Mental Wellness',        emoji: '🧘' },
+  'digestion-gut-health': { label: 'Digestion & Gut Health', dbValue: 'Digestion & Gut Health', emoji: '🫶' },
+  'pain-inflammation':    { label: 'Pain & Inflammation',    dbValue: 'Pain & Inflammation',    emoji: '💪' },
+  'head':                 { label: 'Head',                   dbValue: 'Head',                   emoji: '🤕' },
+  'throat':               { label: 'Throat',                 dbValue: 'Throat',                 emoji: '🗣️' },
+  'skin-wounds':          { label: 'Skin & Wounds',          dbValue: 'Skin & Wounds',          emoji: '🩹' },
+  'eyes':                 { label: 'Eyes',                   dbValue: 'Eyes',                   emoji: '👁️' },
+  'ears':                 { label: 'Ears',                   dbValue: 'Ears',                   emoji: '👂' },
+  'fever-immune':         { label: 'Fever & Immune',         dbValue: 'Fever & Immune',         emoji: '🌡️' },
+}

@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts — next/font injects these CSS vars via layout.tsx */
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
+
+  /* Brand colors */
+  --color-green-primary: #2D6A4F;
+  --color-green-light:   #D8F3DC;
+  --color-green-mid:     #B7E4C7;
+  --color-off-white:     #F8FAF9;
+
+  /* Text */
+  --color-ink:           #1B1B1B;
+  --color-muted:         #555F5A;
+
+  /* Caution / warning */
+  --color-caution:       #F4A261;
+  --color-caution-bg:    #FFF3E0;
+  --color-caution-text:  #B45309;
+}
+
+body {
+  background: #FFFFFF;
+  color: #1B1B1B;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
