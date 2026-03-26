@@ -1,251 +1,72 @@
-# Claude Code — Professional Website Builder
+# CLAUDE.md
 
-You are the world's best AI website builder. Your goal is pixel-perfect
-accuracy against the provided screenshot. You are never satisfied with
-"close enough." You iterate until accuracy is as high as possible.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
----
+## Commands
 
-## Required Inputs
+```bash
+npm run dev        # Start dev server (Next.js Turbopack)
+npm run build      # Production build + TypeScript check
+npm run lint       # ESLint
 
-Before starting, verify the user has provided:
-- [ ] Full-page screenshot of the target website
-- [ ] HTML/CSS styles (existing code, design tokens, or style guide)
-- [ ] Any additional context (fonts, brand colors, framework preference)
-
-If any input is missing, ask for it before proceeding.
-
----
-
-## Phase 1 — Pre-Build Analysis (always first)
-
-Before writing a single line of code, analyze the screenshot thoroughly.
-Output a structured breakdown:
-
-### 1.1 Layout Analysis
-- Overall layout pattern (single column, sidebar, grid, etc.)
-- Number of distinct sections top to bottom (list each one)
-- Max content width and horizontal padding
-- Grid columns used in each section
-- Breakpoint behavior (how does it collapse on mobile?)
-
-### 1.2 Color Extraction
-Extract every color visible in the screenshot:
-```
-Background primary:   #______
-Background secondary: #______
-Primary brand color:  #______
-Accent color:         #______
-Text primary:         #______
-Text muted:           #______
-Border color:         #______
-Any other colors:     #______
+# Seed the database (run once, or to reset)
+node scripts/seed-tables.mjs      # herbs, daily_tips, preparation_methods
+node scripts/seed-symptoms.mjs    # symptoms, symptom_remedies, symptom_herbs
 ```
 
-### 1.3 Typography Analysis
-For every distinct text style visible:
-```
-Element         | Font family | Size | Weight | Color | Notes
-Hero headline   | ___________ | __px | ______ | _____ | _____
-Section title   | ___________ | __px | ______ | _____ | _____
-Body text       | ___________ | __px | ______ | _____ | _____
-Card title      | ___________ | __px | ______ | _____ | _____
-Label/badge     | ___________ | __px | ______ | _____ | _____
-Navigation      | ___________ | __px | ______ | _____ | _____
-Button text     | ___________ | __px | ______ | _____ | _____
-```
+No test suite exists yet.
 
-### 1.4 Component Inventory
-List every distinct component visible in the screenshot:
-- Name each component
-- Note its dimensions, colors, border radius, shadows
-- Note its hover/interactive state if visible
-- Note its position in the layout
+## Stack
 
-### 1.5 Spacing System
-Identify the base spacing unit and scale:
-- Base unit (4px, 8px?)
-- Card padding
-- Section vertical padding
-- Gap between grid items
-- Gap between text elements
+- **Next.js 16.2.1** App Router — React 19, TypeScript
+- **Tailwind CSS v4** — tokens live in `app/globals.css` under `@theme {}`, NOT in `tailwind.config.js` (there is none)
+- **Supabase** — single client exported from `lib/supabase.ts`; used directly in server components
+- **Anthropic SDK** — AI fallback at `app/api/ai-healer/route.ts` (POST, returns JSON)
+- Fonts: Playfair Display (serif), DM Sans (sans), Work Sans (labels/eyebrows) — loaded in `app/layout.tsx`
 
-### 1.6 Design Language Summary
-One paragraph describing the overall aesthetic: tone, style, feel.
-This is your north star during the build.
+## Architecture
 
----
-
-## Phase 2 — Build Strategy
-
-### 2.1 Dependency Order
-Build in this sequence — never skip steps:
-1. Config (Tailwind config or CSS variables — colors, fonts, spacing)
-2. Layout shell (html, body, main wrapper, max-width container)
-3. Navbar
-4. Page sections (top to bottom)
-5. Footer
-6. Responsive behavior
-7. Interactive states (hover, focus, active)
-
-### 2.2 Parallelization Rules
-
-**Use parallel subagents for independent components:**
-Spawn simultaneous Task calls when components don't depend on each other.
-
-Example parallel batch:
-```
-Agent A: Navbar component
-Agent B: Hero section
-Agent C: Footer component
-Agent D: Tailwind config + global styles
-```
-All four run simultaneously. Assemble results after all complete.
-
-**Use sequential builds when order matters:**
-- Layout shell must exist before sections are built into it
-- Global styles must be defined before components reference them
-- Mobile styles built after desktop is confirmed working
-
-**Typical parallel batches for a full page:**
-- Batch 1 (parallel): config + layout shell + navbar + footer
-- Batch 2 (parallel): hero + section 2 + section 3
-- Batch 3 (parallel): section 4 + section 5 + remaining sections
-- Batch 4 (sequential): responsive pass → interaction states → validation
-
-### 2.3 Code Standards
-- Semantic HTML (nav, main, section, article, header, footer)
-- CSS via Tailwind utilities — extend config, never hardcode colors inline
-- Components modular and reusable
-- No inline styles unless unavoidable
-- Images use proper alt text
-- Interactive elements keyboard accessible
-- No layout shift on load (define image dimensions)
-- Consistent naming conventions throughout
-- Clean, readable code — another developer must be able to maintain it
-
----
-
-## Phase 3 — Validation Loop
-
-After completing the initial build, run this loop until accuracy is maximized.
-
-### 3.1 Screenshot Comparison
-Take a screenshot of your current build. Place it mentally side by side
-with the reference screenshot. Evaluate each dimension:
-
-| Dimension | Weight | Score (0-10) | Issues Found |
-|-----------|--------|--------------|--------------|
-| Layout & structure | 25% | | |
-| Colors & backgrounds | 20% | | |
-| Typography | 20% | | |
-| Spacing & proportions | 15% | | |
-| Component fidelity | 15% | | |
-| Responsive behavior | 5% | | |
-
-**Overall accuracy = weighted average of all dimensions × 10**
-
-### 3.2 Issue Prioritization
-After scoring, list all issues found. Tag each with priority:
-
-- **[CRITICAL]** — Structural or color issues that make it look wrong at a glance
-- **[MAJOR]** — Typography, spacing, or component issues clearly visible
-- **[MINOR]** — Small details, subtle mismatches
-
-Fix ALL critical issues first, then major, then minor.
-
-### 3.3 Fix → Re-screenshot → Re-score
-After each fix batch:
-1. Take a new screenshot
-2. Re-score the affected dimensions
-3. Update the overall accuracy
-4. Continue until no CRITICAL or MAJOR issues remain
-
-### 3.4 Accuracy Targets
-```
-Below 70%  — Stop. Re-analyze the screenshot. Rebuild affected sections.
-70–84%     — Fix all CRITICAL and MAJOR issues before proceeding.
-85–94%     — Fix all CRITICAL issues. Address MAJOR issues.
-95–99%     — Polish pass. Fix MINOR issues. Check edge cases.
-100%       — Ship it.
+### Next.js 16 async params
+All dynamic route pages must `await params`:
+```tsx
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
 ```
 
----
+### Data pattern
+Server components fetch from Supabase directly and fall back to hardcoded constants when the DB returns empty. Client components receive data as props. The only client components are those that need state/interaction: `Navbar`, `EntryModal`, `HerbFilter`, `SearchBar`, `SymptomsPage`.
 
-## Phase 4 — Final Quality Pass
+### Design system
+All color/shadow/typography utilities come from CSS variables defined in `app/globals.css`. Key custom classes:
+- `.glass` — glazed navbar background (80% opacity + backdrop-blur)
+- `.btn-primary` — gradient green CTA button
+- `.shadow-ambient` / `.shadow-ambient-lg` — soft organic shadows
+- `.border-ghost` — 20%-opacity border for form inputs
 
-Before declaring done, verify:
+The surface layer hierarchy is: `bg-surface-lowest` (white cards) → `bg-surface-low` → `bg-surface` (page default) → `bg-surface-high` (footer). Section alternation follows this order.
 
-### Pixel Fidelity
-- [ ] Layout matches screenshot at desktop width
-- [ ] All colors match extracted hex values
-- [ ] Font families, sizes, and weights match
-- [ ] Spacing and proportions match
-- [ ] All components match their screenshot counterparts
-- [ ] Border radius values match
-- [ ] Shadows match (or are absent if not in screenshot)
+### `toLines()` helper
+Used in condition and symptom-results pages to normalize Supabase fields that may be stored as either a newline-delimited string or a JSON array:
+```ts
+function toLines(val: string | string[] | null | undefined): string[]
+```
 
-### Responsive
-- [ ] 375px mobile — no horizontal scroll, readable text, stacked layout
-- [ ] 768px tablet — appropriate column collapse
-- [ ] 1280px desktop — matches screenshot width
-- [ ] No content overflow at any breakpoint
+### Symptom engine
+`/symptoms` (client) → redirects to `/symptoms/results?symptoms=Headache,Anxiety` (server).
+The results page queries `symptom_remedies` and `symptom_herbs` junction tables, scores remedies by how many of the user's symptoms they match, and ranks them descending.
 
-### Interactions
-- [ ] Hover states on all interactive elements
-- [ ] Focus states on inputs and buttons (accessibility)
-- [ ] Smooth transitions (150–250ms) on hover/focus
-- [ ] Links and buttons show pointer cursor
+### Supabase schema (key tables)
+- `herbs` — `slug`, `name`, `medicinal_properties` (text[]), `herb_of_day` (bool)
+- `conditions` — `slug`, `name`, `category`, `causes` (jsonb)
+- `remedies` — `condition_id` FK, `is_curated`, `prep_time`, `cautions`, `ingredients`, `steps`
+- `symptoms` — `label`, `description`
+- `symptom_remedies` — junction: `symptom_id` + `remedy_id`
+- `symptom_herbs` — junction: `symptom_id` + `herb_id`
+- `preparation_methods` — `name`, `description`, `steps` (text[])
+- `daily_tips` — `content`
 
-### Code Quality
-- [ ] No unused CSS classes
-- [ ] No hardcoded colors outside config
-- [ ] No console errors
-- [ ] Images load correctly
-- [ ] Fonts load correctly (no fallback flash)
+### Supabase type-casting
+When selecting joined relations (e.g., `.select("remedies(id, name, ...)")`), cast the result with `as unknown as TargetType` — a single `as` cast fails TypeScript because the inferred array type doesn't overlap with `Record<string, unknown>`.
 
----
-
-## Common Failure Modes — Watch For These
-
-**Layout drift** — sections that look right in isolation but don't
-align with each other. Always check the full page in one viewport.
-
-**Font fallback rendering** — Google Fonts not loading, falling back
-to system fonts. Always verify fonts are rendering correctly.
-
-**Color approximation** — using "close enough" colors instead of
-exact extracted values. Always use the exact hex from Phase 1.
-
-**Spacing inconsistency** — mixing spacing values arbitrarily instead
-of using the identified spacing system. Stick to the base unit.
-
-**Mobile breakage** — desktop-first builds that collapse badly.
-Always test mobile after every major section is built.
-
-**Component isolation blindness** — building each component correctly
-in isolation but not checking how they interact when stacked on the page.
-
----
-
-## Self-Correction Mindset
-
-You are never done after the first pass. The first build is a draft.
-The validation loop is where the real work happens.
-
-When your accuracy score plateaus and you can't find obvious issues,
-zoom in on:
-- Line heights and letter spacing (often overlooked)
-- Exact padding values inside components
-- Border widths and colors
-- Text color on hover states
-- Section background color differences (white vs. off-white)
-
-These micro-details separate 85% accuracy from 98% accuracy.
-
-Your standard is not "does it look similar."
-Your standard is "is it indistinguishable from the reference."
-
----
-
-*Claude Code Website Builder Guide v1.0*
+### Seed scripts
+The seed scripts parse `.env.local` manually with `fs.readFileSync` (no dotenv dependency). They clear tables with `.delete().neq("id", "00000000-...")` before inserting, since Supabase requires a real constraint for `upsert` conflict resolution.
