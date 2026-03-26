@@ -66,8 +66,7 @@ export default function SymptomsPage() {
 
   function handleFindRemedies() {
     if (symptoms.length === 0) return;
-    const query = symptoms.join("+");
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+    router.push(`/symptoms/results?symptoms=${encodeURIComponent(symptoms.join(","))}`);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans, Work_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/app/ui/Navbar";
+import EntryModal from "@/app/ui/EntryModal";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans bg-surface text-on-surface">
         <Navbar />
+        <EntryModal />
         {children}
       </body>
     </html>

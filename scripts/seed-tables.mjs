@@ -113,9 +113,11 @@ async function seedDailyTips() {
 
 async function seedPreparationMethods() {
   console.log("Seeding preparation_methods...");
+  // Delete existing rows first to allow re-seeding idempotently
+  await supabase.from("preparation_methods").delete().neq("id", "00000000-0000-0000-0000-000000000000");
   const { data, error } = await supabase
     .from("preparation_methods")
-    .upsert(preparationMethods, { onConflict: "name" })
+    .insert(preparationMethods)
     .select();
 
   if (error) {
