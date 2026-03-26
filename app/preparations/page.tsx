@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Footer from "@/app/ui/Footer";
+import { supabase } from "@/lib/supabase";
 
-// ─── Preparation Methods Data ────────────────────────────────────────────────
+// ─── Fallback Preparation Methods Data ──────────────────────────────────────
 
-const METHODS = [
+const FALLBACK_METHODS = [
   {
     name: "Herbal Tea (Infusion)",
     emoji: "\u{1F375}",
@@ -63,9 +64,48 @@ const METHODS = [
   },
 ];
 
+// ─── Emoji & Difficulty maps for DB records ─────────────────────────────────
+
+const EMOJI_MAP: Record<string, string> = {
+  'Herbal Tea (Infusion)': '\u{1F375}',
+  'Tincture': '\u{1F9EA}',
+  'Poultice': '\u{1F33F}',
+  'Cold-Infused Oil': '\u{1FAD2}',
+  'Ointment / Salve': '\u{1F9F4}',
+  'Steam Inhalation': '\u2668\uFE0F',
+  'Compress': '\u{1FA79}',
+};
+
+const DIFFICULTY_MAP: Record<string, string> = {
+  'Herbal Tea (Infusion)': 'Beginner',
+  'Tincture': 'Intermediate',
+  'Poultice': 'Beginner',
+  'Cold-Infused Oil': 'Intermediate',
+  'Ointment / Salve': 'Intermediate',
+  'Steam Inhalation': 'Beginner',
+  'Compress': 'Beginner',
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function PreparationsPage() {
+export default async function PreparationsPage() {
+  // ── Fetch preparation methods from Supabase ─────────────────────────────
+  const { data: methods } = await supabase
+    .from('preparation_methods')
+    .select('id, name, description, steps, use_cases')
+    .order('name');
+
+  const METHODS =
+    methods && methods.length > 0
+      ? methods.map((m) => ({
+          name: m.name,
+          emoji: EMOJI_MAP[m.name] ?? '\u{1F33F}',
+          description: m.description ?? '',
+          difficulty: DIFFICULTY_MAP[m.name] ?? 'Beginner',
+          time: '', // DB does not store prep time; kept for badge rendering
+        }))
+      : FALLBACK_METHODS;
+
   return (
     <div className="min-h-screen flex flex-col">
 
@@ -127,12 +167,14 @@ export default function PreparationsPage() {
                   >
                     {method.difficulty}
                   </span>
-                  <span
-                    className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed/30 text-primary text-[12px] font-semibold"
-                    style={{ fontFamily: "var(--font-work-sans)" }}
-                  >
-                    {method.time}
-                  </span>
+                  {method.time && (
+                    <span
+                      className="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed/30 text-primary text-[12px] font-semibold"
+                      style={{ fontFamily: "var(--font-work-sans)" }}
+                    >
+                      {method.time}
+                    </span>
+                  )}
                 </div>
 
                 {/* Learn More link */}

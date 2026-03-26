@@ -3,19 +3,20 @@ import { Clock, ChevronRight, ArrowRight } from "lucide-react";
 import SearchBar from "@/app/ui/SearchBar";
 import CategoryGrid from "@/app/ui/CategoryGrid";
 import Footer from "@/app/ui/Footer";
+import { supabase } from "@/lib/supabase";
 
-// ─── Placeholder data (replace with Supabase queries) ────────────────────────
+// ─── Hardcoded fallback data ─────────────────────────────────────────────────
 
-const HERB_OF_DAY = {
+const FALLBACK_HERB_OF_DAY = {
   name: "Turmeric",
   property: "Anti-inflammatory · Antioxidant · Digestive aid",
   slug: "turmeric",
 };
 
-const HEALTH_TIP =
+const FALLBACK_HEALTH_TIP =
   "Start your morning with warm lemon water to stimulate digestion, alkalize the body, and gently detox the liver — a practice used for centuries in Ayurvedic tradition.";
 
-const FEATURED_REMEDIES = [
+const FALLBACK_FEATURED_REMEDIES = [
   {
     id: "1",
     name: "Ginger & Honey Tea for Sore Throat",
@@ -23,7 +24,7 @@ const FEATURED_REMEDIES = [
     description:
       "A time-tested remedy combining anti-bacterial honey and anti-inflammatory ginger to soothe throat irritation and speed recovery.",
     prep_time: "10 min",
-    caution: null,
+    caution: null as string | null,
     slug: "sore-throat",
   },
   {
@@ -71,7 +72,61 @@ const HOW_IT_WORKS = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function Home() {
+export default async function Home() {
+  // ── Fetch herb of the day from Supabase ──────────────────────────────────
+  const { data: herbOfDay } = await supabase
+    .from('herbs')
+    .select('name, slug, medicinal_properties')
+    .eq('herb_of_day', true)
+    .limit(1)
+    .single();
+
+  const HERB_OF_DAY = herbOfDay
+    ? {
+        name: herbOfDay.name,
+        property: (herbOfDay.medicinal_properties as string[]).join(" · "),
+        slug: herbOfDay.slug,
+      }
+    : FALLBACK_HERB_OF_DAY;
+
+  // ── Fetch daily wellness tip from Supabase ───────────────────────────────
+  const { data: dailyTip } = await supabase
+    .from('daily_tips')
+    .select('content')
+    .limit(1)
+    .single();
+
+  const HEALTH_TIP = dailyTip?.content || FALLBACK_HEALTH_TIP;
+
+  // ── Fetch featured (curated) remedies from Supabase ──────────────────────
+  const { data: featuredRemedies } = await supabase
+    .from('remedies')
+    .select('id, name, condition_id, prep_time, cautions, is_curated, conditions(name, slug, category)')
+    .eq('is_curated', true)
+    .limit(3);
+
+  const FEATURED_REMEDIES =
+    featuredRemedies && featuredRemedies.length > 0
+      ? featuredRemedies.map((r) => {
+          const condition = r.conditions as unknown as { name: string; slug: string; category: string } | null;
+          const caution = r.cautions
+            ? Array.isArray(r.cautions)
+              ? (r.cautions as string[]).join(", ")
+              : String(r.cautions)
+            : null;
+
+          return {
+            id: String(r.id),
+            name: r.name,
+            condition: condition?.name ?? "General",
+            description: "", // remedies table has no description column; template uses line-clamp so empty is safe
+            prep_time: r.prep_time ?? "",
+            caution,
+            slug: condition?.slug ?? "",
+          };
+        })
+      : FALLBACK_FEATURED_REMEDIES;
+
   return (
     <div className="min-h-screen flex flex-col">
 

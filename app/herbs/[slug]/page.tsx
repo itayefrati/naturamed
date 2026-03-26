@@ -7,6 +7,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Footer from "@/app/ui/Footer";
+import { supabase } from "@/lib/supabase";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,12 +34,13 @@ type HerbData = {
   preparations: Preparation[];
   cautions: string[];
   sources: string[];
+  funFact: string | null;
   relatedRemedies: RelatedRemedy[];
 };
 
-// ─── Placeholder data ───────────────────────────────────────────────────────
+// ─── Fallback data ──────────────────────────────────────────────────────────
 
-const HERBS_DATA: Record<string, HerbData> = {
+const FALLBACK_HERBS: Record<string, HerbData> = {
   turmeric: {
     name: "Turmeric",
     latinName: "Curcuma longa",
@@ -90,6 +92,7 @@ const HERBS_DATA: Record<string, HerbData> = {
       "Hewlings, S.J. & Kalman, D.S. (2017). Curcumin: A Review of Its Effects on Human Health. Foods, 6(10), 92.",
       "Prasad, S. & Aggarwal, B.B. (2011). Turmeric, the Golden Spice. Herbal Medicine: Biomolecular and Clinical Aspects, 2nd edition.",
     ],
+    funFact: null,
     relatedRemedies: [
       {
         name: "Golden Milk Latte",
@@ -110,6 +113,32 @@ const HERBS_DATA: Record<string, HerbData> = {
   },
 };
 
+// ─── Generic icons for usage methods ────────────────────────────────────────
+
+const METHOD_ICONS: Record<string, string> = {
+  tea: "\u{1F375}",
+  tincture: "\u{1F9EA}",
+  culinary: "\u{1F373}",
+  topical: "\u2728",
+  capsule: "\u{1F48A}",
+  poultice: "\u{1FA79}",
+  oil: "\u{1F9F4}",
+  bath: "\u{1F6C1}",
+  compress: "\u{1FA79}",
+  inhalation: "\u{1F4A8}",
+  powder: "\u2728",
+  decoction: "\u{1F375}",
+  infusion: "\u{1F375}",
+  salve: "\u{1F9F4}",
+  syrup: "\u{1F36F}",
+  smoothie: "\u{1F964}",
+};
+
+function getMethodIcon(method: string): string {
+  const key = method.toLowerCase().trim();
+  return METHOD_ICONS[key] || "\u{1F33F}";
+}
+
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default async function HerbDetailPage({
@@ -118,9 +147,65 @@ export default async function HerbDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const herb = HERBS_DATA[slug];
 
-  if (!herb) notFound();
+  // ── Try Supabase first ──────────────────────────────────────────────────
+  const { data: dbHerb, error } = await supabase
+    .from("herbs")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  // ── Query related remedies ──────────────────────────────────────────────
+  const { data: relatedRemedies } = await supabase
+    .from("remedies")
+    .select("id, name, condition_id, conditions(name, slug)")
+    .limit(3);
+
+  // ── Build the herb object ───────────────────────────────────────────────
+  let herb: HerbData;
+
+  if (!error && dbHerb) {
+    // Map DB columns to our template shape
+    const usageMethods: string[] = dbHerb.usage_methods || [];
+    const preparations: Preparation[] = usageMethods.map((method: string) => ({
+      method,
+      icon: getMethodIcon(method),
+      description: `Prepared as ${method.toLowerCase()} — follow traditional preparation guidelines for best results.`,
+    }));
+
+    const remedyLinks: RelatedRemedy[] = (relatedRemedies || []).map(
+      (r: Record<string, unknown>) => {
+        const condition = r.conditions as
+          | { name: string; slug: string }
+          | null;
+        return {
+          name: r.name as string,
+          condition: condition?.name || "General Wellness",
+          slug: condition?.slug || "wellness",
+        };
+      }
+    );
+
+    herb = {
+      name: dbHerb.name,
+      latinName: dbHerb.latin_name || "",
+      family: dbHerb.family || "",
+      emoji: "\u{1F33F}",
+      history: dbHerb.fun_fact || "",
+      overview: dbHerb.description || "",
+      properties: dbHerb.medicinal_properties || [],
+      preparations,
+      cautions: dbHerb.precautions || [],
+      sources: dbHerb.sources || [],
+      funFact: dbHerb.fun_fact || null,
+      relatedRemedies: remedyLinks,
+    };
+  } else {
+    // Fall back to hardcoded data
+    const fallback = FALLBACK_HERBS[slug];
+    if (!fallback) notFound();
+    herb = fallback;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">
@@ -174,13 +259,19 @@ export default async function HerbDetailPage({
             <h1 className="font-serif font-bold text-[40px] sm:text-[48px] leading-[1.08] text-on-surface tracking-tight">
               {herb.name}
             </h1>
-            <p className="font-serif italic text-[20px] text-on-surface-variant">
-              {herb.latinName}
-            </p>
-            <p className="text-[15px] text-on-surface-variant leading-relaxed">
-              Family:{" "}
-              <span className="font-medium text-on-surface">{herb.family}</span>
-            </p>
+            {herb.latinName && (
+              <p className="font-serif italic text-[20px] text-on-surface-variant">
+                {herb.latinName}
+              </p>
+            )}
+            {herb.family && (
+              <p className="text-[15px] text-on-surface-variant leading-relaxed">
+                Family:{" "}
+                <span className="font-medium text-on-surface">
+                  {herb.family}
+                </span>
+              </p>
+            )}
             <p className="text-[16px] text-on-surface-variant leading-[1.7] max-w-lg">
               {herb.overview}
             </p>
@@ -189,24 +280,26 @@ export default async function HerbDetailPage({
       </section>
 
       {/* ── Apothecary Lore ─────────────────────────────────────────────── */}
-      <section className="px-6 lg:px-12 py-16 bg-surface-low">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="max-w-3xl mx-auto text-center flex flex-col gap-5">
-            <p
-              className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Apothecary Lore
-            </p>
-            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
-              A Heritage of Healing
-            </h2>
-            <p className="text-[17px] text-on-surface-variant leading-[1.8]">
-              {herb.history}
-            </p>
+      {herb.history && (
+        <section className="px-6 lg:px-12 py-16 bg-surface-low">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="max-w-3xl mx-auto text-center flex flex-col gap-5">
+              <p
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
+                Apothecary Lore
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
+                A Heritage of Healing
+              </h2>
+              <p className="text-[17px] text-on-surface-variant leading-[1.8]">
+                {herb.history}
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Overview — Botanical Classification & Bioactive Compounds ──── */}
       <section className="px-6 lg:px-12 py-16 bg-surface">
@@ -225,16 +318,18 @@ export default async function HerbDetailPage({
                   { label: "Common Name", value: herb.name },
                   { label: "Latin Name", value: herb.latinName },
                   { label: "Family", value: herb.family },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-baseline gap-3">
-                    <span className="text-[13px] text-on-surface-variant w-32 shrink-0">
-                      {item.label}
-                    </span>
-                    <span className="text-[15px] font-medium text-on-surface">
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
+                ]
+                  .filter((item) => item.value)
+                  .map((item) => (
+                    <div key={item.label} className="flex items-baseline gap-3">
+                      <span className="text-[13px] text-on-surface-variant w-32 shrink-0">
+                        {item.label}
+                      </span>
+                      <span className="text-[15px] font-medium text-on-surface">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </div>
 
@@ -255,176 +350,186 @@ export default async function HerbDetailPage({
       </section>
 
       {/* ── Medicinal Properties ────────────────────────────────────────── */}
-      <section className="px-6 lg:px-12 py-16 bg-surface-low">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10">
-            <p
-              className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Therapeutic Profile
-            </p>
-            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
-              Medicinal Properties
-            </h2>
-          </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            {herb.properties.map((property) => (
-              <span
-                key={property}
-                className="inline-flex items-center px-5 py-2.5 rounded-full bg-secondary-container text-on-secondary-container text-[14px] font-semibold"
+      {herb.properties.length > 0 && (
+        <section className="px-6 lg:px-12 py-16 bg-surface-low">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-10">
+              <p
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
                 style={{ fontFamily: "var(--font-work-sans)" }}
               >
-                {property}
-              </span>
-            ))}
+                Therapeutic Profile
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
+                Medicinal Properties
+              </h2>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3">
+              {herb.properties.map((property) => (
+                <span
+                  key={property}
+                  className="inline-flex items-center px-5 py-2.5 rounded-full bg-secondary-container text-on-secondary-container text-[14px] font-semibold"
+                  style={{ fontFamily: "var(--font-work-sans)" }}
+                >
+                  {property}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Clinical Application — Preparation Methods ──────────────────── */}
-      <section className="px-6 lg:px-12 py-16 bg-surface">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10">
-            <p
-              className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Clinical Application
-            </p>
-            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
-              Preparation Methods
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {herb.preparations.map((prep) => (
-              <div
-                key={prep.method}
-                className="rounded-2xl bg-surface-lowest p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-4"
+      {herb.preparations.length > 0 && (
+        <section className="px-6 lg:px-12 py-16 bg-surface">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-10">
+              <p
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
               >
-                <span className="text-[40px] leading-none">{prep.icon}</span>
-                <h3 className="font-semibold text-[18px] text-on-surface">
-                  {prep.method}
-                </h3>
-                <p className="text-[14px] text-on-surface-variant leading-relaxed flex-1">
-                  {prep.description}
-                </p>
-              </div>
-            ))}
+                Clinical Application
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
+                Preparation Methods
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {herb.preparations.map((prep) => (
+                <div
+                  key={prep.method}
+                  className="rounded-2xl bg-surface-lowest p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-4"
+                >
+                  <span className="text-[40px] leading-none">{prep.icon}</span>
+                  <h3 className="font-semibold text-[18px] text-on-surface">
+                    {prep.method}
+                  </h3>
+                  <p className="text-[14px] text-on-surface-variant leading-relaxed flex-1">
+                    {prep.description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Safety & Contraindications ──────────────────────────────────── */}
-      <section className="px-6 lg:px-12 py-16 bg-surface-low">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10">
-            <p
-              className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-tertiary mb-3"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Safety Information
-            </p>
-            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
-              Contraindications & Cautions
-            </h2>
-          </div>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-tertiary-fixed/30 p-8">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0 mt-0.5">
-                <AlertTriangle size={20} className="text-tertiary" />
-              </div>
-              <div className="flex flex-col gap-3">
-                <p className="font-semibold text-[16px] text-tertiary">
-                  Please note the following before use
-                </p>
-                <ul className="flex flex-col gap-2.5">
-                  {herb.cautions.map((caution, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2.5 text-[15px] text-on-surface leading-relaxed"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-2 shrink-0" />
-                      {caution}
-                    </li>
-                  ))}
-                </ul>
+      {herb.cautions.length > 0 && (
+        <section className="px-6 lg:px-12 py-16 bg-surface-low">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-10">
+              <p
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-tertiary mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
+                Safety Information
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
+                Contraindications & Cautions
+              </h2>
+            </div>
+            <div className="max-w-2xl mx-auto rounded-2xl bg-tertiary-fixed/30 p-8">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertTriangle size={20} className="text-tertiary" />
+                </div>
+                <div className="flex flex-col gap-3">
+                  <p className="font-semibold text-[16px] text-tertiary">
+                    Please note the following before use
+                  </p>
+                  <ul className="flex flex-col gap-2.5">
+                    {herb.cautions.map((caution, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-[15px] text-on-surface leading-relaxed"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-2 shrink-0" />
+                        {caution}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Scientific Standards ─────────────────────────────────────────── */}
-      <section className="px-6 lg:px-12 py-16 bg-surface">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10">
-            <p
-              className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Evidence Base
-            </p>
-            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
-              Scientific Standards
-            </h2>
-          </div>
-          <div className="max-w-2xl mx-auto flex flex-col gap-4">
-            {herb.sources.map((source, i) => (
-              <div
-                key={i}
-                className="rounded-2xl bg-surface-lowest p-6 shadow-ambient flex items-start gap-4"
+      {herb.sources.length > 0 && (
+        <section className="px-6 lg:px-12 py-16 bg-surface">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-10">
+              <p
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
               >
-                <div className="w-9 h-9 rounded-full bg-primary-fixed/40 flex items-center justify-center shrink-0">
-                  <BookOpen size={16} className="text-primary-container" />
+                Evidence Base
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
+                Scientific Standards
+              </h2>
+            </div>
+            <div className="max-w-2xl mx-auto flex flex-col gap-4">
+              {herb.sources.map((source, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl bg-surface-lowest p-6 shadow-ambient flex items-start gap-4"
+                >
+                  <div className="w-9 h-9 rounded-full bg-primary-fixed/40 flex items-center justify-center shrink-0">
+                    <BookOpen size={16} className="text-primary-container" />
+                  </div>
+                  <p className="text-[14px] text-on-surface-variant leading-relaxed">
+                    {source}
+                  </p>
                 </div>
-                <p className="text-[14px] text-on-surface-variant leading-relaxed">
-                  {source}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Related Preparations ─────────────────────────────────────────── */}
-      <section className="px-6 lg:px-12 py-16 bg-surface-low">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10">
-            <p
-              className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Continue Exploring
-            </p>
-            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
-              Related Preparations
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {herb.relatedRemedies.map((remedy) => (
-              <Link
-                key={remedy.name}
-                href={`/conditions/${remedy.slug}`}
-                className="group rounded-2xl bg-surface-lowest p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-3"
+      {herb.relatedRemedies.length > 0 && (
+        <section className="px-6 lg:px-12 py-16 bg-surface-low">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-10">
+              <p
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
               >
-                <span
-                  className="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[12px] font-semibold w-fit"
-                  style={{ fontFamily: "var(--font-work-sans)" }}
+                Continue Exploring
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface">
+                Related Preparations
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {herb.relatedRemedies.map((remedy) => (
+                <Link
+                  key={remedy.name}
+                  href={`/conditions/${remedy.slug}`}
+                  className="group rounded-2xl bg-surface-lowest p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-3"
                 >
-                  {remedy.condition}
-                </span>
-                <h3 className="font-semibold text-[18px] text-on-surface leading-snug">
-                  {remedy.name}
-                </h3>
-                <span className="flex items-center gap-1.5 text-[14px] text-primary-container font-medium mt-auto pt-2 group-hover:underline">
-                  View Remedy <ArrowRight size={14} />
-                </span>
-              </Link>
-            ))}
+                  <span
+                    className="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[12px] font-semibold w-fit"
+                    style={{ fontFamily: "var(--font-work-sans)" }}
+                  >
+                    {remedy.condition}
+                  </span>
+                  <h3 className="font-semibold text-[18px] text-on-surface leading-snug">
+                    {remedy.name}
+                  </h3>
+                  <span className="flex items-center gap-1.5 text-[14px] text-primary-container font-medium mt-auto pt-2 group-hover:underline">
+                    View Remedy <ArrowRight size={14} />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <Footer />
