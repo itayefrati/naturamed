@@ -17,12 +17,12 @@ export default function SearchBar() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full items-center rounded-full border border-[#E8F3EB] bg-white shadow-sm overflow-hidden focus-within:border-green-primary focus-within:ring-2 focus-within:ring-[#2D6A4F]/20 transition-all duration-200"
+      className="flex w-full items-center rounded-full bg-surface-lowest shadow-ambient overflow-hidden focus-within:ring-2 focus-within:ring-primary-container/20 transition-all duration-200"
     >
       <div className="relative flex-1 flex items-center">
         <Search
           size={18}
-          className="absolute left-5 text-muted pointer-events-none shrink-0"
+          className="absolute left-5 text-on-surface-variant pointer-events-none shrink-0"
           strokeWidth={2}
         />
         <input
@@ -30,12 +30,12 @@ export default function SearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search a condition, herb, or symptom..."
-          className="w-full pl-12 pr-4 py-4 bg-transparent text-ink placeholder-[#555F5A] text-[16px] font-sans focus:outline-none"
+          className="w-full pl-12 pr-4 py-4 bg-transparent text-on-surface placeholder-on-surface-variant text-[16px] font-sans focus:outline-none"
         />
       </div>
       <button
         type="submit"
-        className="shrink-0 px-7 py-4 bg-green-primary text-white text-[15px] font-semibold hover:bg-[#235a41] transition-colors duration-150 font-sans"
+        className="shrink-0 px-7 py-4 btn-primary text-[15px] font-semibold font-sans"
       >
         Search
       </button>

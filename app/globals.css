@@ -1,28 +1,102 @@
 @import "tailwindcss";
 
 @theme {
-  /* Fonts — next/font injects these CSS vars via layout.tsx */
-  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
-  --font-serif: var(--font-playfair), Georgia, serif;
+  /* ── Fonts ────────────────────────────────────────────────────────── */
+  --font-sans: var(--font-dm-sans), "Work Sans", system-ui, sans-serif;
+  --font-serif: var(--font-playfair), "Noto Serif", Georgia, serif;
 
-  /* Brand colors */
+  /* ── Primary (Deep Botanical Green) ───────────────────────────────── */
+  --color-primary: #0f5238;
+  --color-primary-container: #2d6a4f;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #a8e7c5;
+  --color-primary-fixed: #b1f0ce;
+  --color-primary-fixed-dim: #95d4b3;
+
+  /* ── Secondary ────────────────────────────────────────────────────── */
+  --color-secondary: #3e6750;
+  --color-secondary-container: #bdeacd;
+  --color-on-secondary-container: #426b54;
+
+  /* ── Tertiary (Amber / Caution) ───────────────────────────────────── */
+  --color-tertiary: #713900;
+  --color-tertiary-container: #8f4f14;
+  --color-tertiary-fixed: #ffdcc4;
+  --color-tertiary-fixed-dim: #ffb780;
+
+  /* ── Surfaces (Warm Parchment Tiers) ──────────────────────────────── */
+  --color-surface: #fbf9f8;
+  --color-surface-container: #efeded;
+  --color-surface-high: #eae8e7;
+  --color-surface-highest: #e4e2e2;
+  --color-surface-low: #f5f3f3;
+  --color-surface-lowest: #ffffff;
+  --color-surface-dim: #dbdad9;
+
+  /* ── On-Surface Text ──────────────────────────────────────────────── */
+  --color-on-surface: #1b1c1c;
+  --color-on-surface-variant: #404943;
+
+  /* ── Outline ──────────────────────────────────────────────────────── */
+  --color-outline: #707973;
+  --color-outline-variant: #bfc9c1;
+
+  /* ── Error ────────────────────────────────────────────────────────── */
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+
+  /* ── Inverse ──────────────────────────────────────────────────────── */
+  --color-inverse-surface: #303030;
+  --color-inverse-on-surface: #f2f0f0;
+  --color-inverse-primary: #95d4b3;
+
+  /* ── Legacy aliases (keep for transition) ─────────────────────────── */
   --color-green-primary: #2D6A4F;
-  --color-green-light:   #D8F3DC;
-  --color-green-mid:     #B7E4C7;
-  --color-off-white:     #F8FAF9;
-
-  /* Text */
-  --color-ink:           #1B1B1B;
-  --color-muted:         #555F5A;
-
-  /* Caution / warning */
-  --color-caution:       #F4A261;
-  --color-caution-bg:    #FFF3E0;
-  --color-caution-text:  #B45309;
+  --color-green-light: #D8F3DC;
+  --color-green-mid: #B7E4C7;
+  --color-off-white: #F8FAF9;
+  --color-ink: #1B1B1B;
+  --color-muted: #555F5A;
+  --color-caution: #F4A261;
+  --color-caution-bg: #FFF3E0;
+  --color-caution-text: #B45309;
 }
 
+/* ── Global Base ──────────────────────────────────────────────────── */
 body {
-  background: #FFFFFF;
-  color: #1B1B1B;
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-dm-sans), "Work Sans", system-ui, sans-serif;
+}
+
+/* ── Glassmorphism utility ────────────────────────────────────────── */
+.glass {
+  background: rgba(251, 249, 248, 0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Gradient CTA button ──────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+  color: var(--color-on-primary);
+  transition: all 200ms ease;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+/* ── Ambient shadow (organic, not Material) ───────────────────────── */
+.shadow-ambient {
+  box-shadow: 0 4px 24px 0 rgba(27, 28, 28, 0.06);
+}
+
+.shadow-ambient-lg {
+  box-shadow: 0 8px 32px 0 rgba(27, 28, 28, 0.08);
+}
+
+/* ── Ghost border (20% opacity for forms) ─────────────────────────── */
+.border-ghost {
+  border: 1px solid rgba(191, 201, 193, 0.20);
 }

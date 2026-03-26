@@ -3,7 +3,8 @@ import { CATEGORY_MAP } from '@/lib/categories'
 import { CATEGORIES } from '@/app/ui/CategoryGrid'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, ArrowRight } from 'lucide-react'
+import Footer from '@/app/ui/Footer'
 
 export default async function CategoryPage({
   params,
@@ -23,59 +24,87 @@ export default async function CategoryPage({
     .order('name')
 
   return (
-    <div className="min-h-screen bg-off-white">
-      <header className="bg-green-primary px-6 lg:px-12 py-6">
+    <div className="min-h-screen flex flex-col">
+
+      {/* ── Hero / Header ──────────────────────────────────────────────── */}
+      <section className="bg-primary py-12 px-6 lg:px-12">
         <div className="max-w-[1200px] mx-auto">
-          <Link href="/" className="text-white/60 text-sm hover:text-white transition-colors font-sans">
-            ← NaturaMed
-          </Link>
-          <div className="flex items-center gap-3 mt-3">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-1.5 text-on-primary/60 text-[13px] mb-4">
+            <Link href="/" className="hover:text-on-primary transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <Link href="/#categories" className="hover:text-on-primary transition-colors">Categories</Link>
+            <ChevronRight size={12} />
+            <span className="text-on-primary">{meta.label}</span>
+          </nav>
+
+          <div className="flex items-center gap-4 mt-2">
             {catDef?.emoji && (
-              <span className="text-3xl" role="img" aria-label={meta.label}>
+              <span className="text-4xl" role="img" aria-label={meta.label}>
                 {catDef.emoji}
               </span>
             )}
             <div>
-              <h1 className="font-serif text-[24px] font-semibold text-white leading-tight">{meta.label}</h1>
+              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-1" style={{ fontFamily: "var(--font-work-sans)" }}>
+                Category
+              </p>
+              <h1 className="font-serif font-bold text-[28px] md:text-[36px] text-on-primary leading-tight">
+                {meta.label}
+              </h1>
               {catDef?.description && (
-                <p className="text-white/70 text-[14px] font-sans mt-0.5">{catDef.description}</p>
+                <p className="text-on-primary/70 text-[15px] mt-1">{catDef.description}</p>
               )}
             </div>
           </div>
         </div>
-      </header>
+      </section>
 
-      <main className="max-w-[1200px] mx-auto px-6 lg:px-12 py-10">
-        {error && <p className="text-red-600 text-sm font-sans">Failed to load conditions.</p>}
+      <main className="flex-1 py-14 px-6 lg:px-12 bg-surface-low">
+        <div className="max-w-[1200px] mx-auto">
+          {error && <p className="text-error text-[14px]">Failed to load conditions.</p>}
 
-        {!error && conditions?.length === 0 && (
-          <p className="text-muted text-center mt-16 font-sans">No conditions found in this category yet.</p>
-        )}
+          {!error && conditions?.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-on-surface-variant text-[16px]">No conditions found in this category yet.</p>
+              <Link href="/" className="text-primary-container font-medium text-[15px] mt-4 inline-flex items-center gap-1 hover:underline">
+                Back to Home <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
 
-        {conditions && conditions.length > 0 && (
-          <p className="text-[13px] text-muted font-sans mb-5">
-            {conditions.length} condition{conditions.length !== 1 ? 's' : ''}
-          </p>
-        )}
+          {conditions && conditions.length > 0 && (
+            <>
+              <p className="text-[13px] text-on-surface-variant mb-6" style={{ fontFamily: "var(--font-work-sans)" }}>
+                {conditions.length} condition{conditions.length !== 1 ? 's' : ''} found
+              </p>
 
-        <div className="flex flex-col gap-2">
-          {conditions?.map((condition) => (
-            <Link
-              key={condition.id}
-              href={`/conditions/${condition.slug}`}
-              className="flex items-center justify-between gap-4 rounded-xl border border-[#E8F3EB] bg-white px-5 py-4 hover:border-green-primary hover:shadow-sm transition-all group"
-            >
-              <div className="min-w-0">
-                <p className="font-semibold text-ink text-[15px] font-sans">{condition.name}</p>
-                {condition.summary && (
-                  <p className="text-[13px] text-muted font-sans mt-0.5 line-clamp-1">{condition.summary}</p>
-                )}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {conditions.map((condition) => (
+                  <Link
+                    key={condition.id}
+                    href={`/conditions/${condition.slug}`}
+                    className="group rounded-xl bg-surface-lowest p-6 flex flex-col gap-3 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    <h3 className="font-semibold text-[16px] text-on-surface group-hover:text-primary-container transition-colors">
+                      {condition.name}
+                    </h3>
+                    {condition.summary && (
+                      <p className="text-[14px] text-on-surface-variant leading-relaxed line-clamp-2">
+                        {condition.summary}
+                      </p>
+                    )}
+                    <span className="text-[14px] text-primary-container font-medium flex items-center gap-1 mt-auto pt-1 group-hover:underline">
+                      Explore <ArrowRight size={14} />
+                    </span>
+                  </Link>
+                ))}
               </div>
-              <ChevronRight size={16} className="text-green-mid flex-shrink-0 group-hover:text-green-primary transition-colors" />
-            </Link>
-          ))}
+            </>
+          )}
         </div>
       </main>
+
+      <Footer />
     </div>
   )
 }

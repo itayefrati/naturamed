@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, AlertTriangle, BookOpen } from 'lucide-react'
+import { ChevronRight, AlertTriangle, BookOpen, Clock } from 'lucide-react'
+import Footer from '@/app/ui/Footer'
 
 function toLines(val: string | string[] | null | undefined): string[] {
   if (!val) return []
@@ -31,109 +32,147 @@ export default async function RemedyDetailPage({
     : remedy.source ? [remedy.source] : []
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8]">
-      <header className="bg-[#2D6A4F] px-4 py-5">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-1.5 text-white/60 text-sm">
-            <Link href="/" className="hover:text-white transition-colors">NaturaMed</Link>
+    <div className="min-h-screen flex flex-col">
+
+      {/* ── Hero / Header ──────────────────────────────────────────────── */}
+      <section className="bg-primary py-12 px-6 lg:px-12">
+        <div className="max-w-[1200px] mx-auto">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-1.5 text-on-primary/60 text-[13px] mb-4 flex-wrap">
+            <Link href="/" className="hover:text-on-primary transition-colors">Home</Link>
             <ChevronRight size={12} />
-            <Link href={`/conditions/${slug}`} className="hover:text-white transition-colors">
+            <Link href={`/conditions/${slug}`} className="hover:text-on-primary transition-colors">
               {condition.name}
             </Link>
-          </div>
-          <div className="flex items-start gap-3 mt-2">
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-white leading-tight">{remedy.name}</h1>
-              {remedy.source && (
-                <p className="text-white/65 text-sm mt-1">{remedy.source}</p>
-              )}
+            <ChevronRight size={12} />
+            <span className="text-on-primary">{remedy.name}</span>
+          </nav>
+
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+                Remedy Preparation
+              </p>
+              <h1 className="font-serif font-bold text-[28px] md:text-[36px] text-on-primary leading-tight">
+                {remedy.name}
+              </h1>
+              <div className="flex items-center gap-4 mt-3 flex-wrap">
+                {remedy.source && (
+                  <p className="text-on-primary/65 text-[14px]">{remedy.source}</p>
+                )}
+                {remedy.prep_time && (
+                  <span className="flex items-center gap-1.5 text-on-primary-container text-[13px]">
+                    <Clock size={13} /> {remedy.prep_time}
+                  </span>
+                )}
+              </div>
             </div>
             {!remedy.is_curated && (
-              <span className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-white/15 text-white/80">
-                AI-generated
+              <span className="flex-shrink-0 text-[11px] px-3 py-1 rounded-full bg-on-primary/15 text-on-primary/80 font-medium" style={{ fontFamily: "var(--font-work-sans)" }}>
+                AI Generated
               </span>
             )}
           </div>
         </div>
-      </header>
+      </section>
 
-      <main className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-7">
+      <main className="flex-1">
 
-        {/* Ingredients */}
+        {/* ── Ingredients ───────────────────────────────────────────────── */}
         {ingredients.length > 0 && (
-          <section>
-            <h2 className="text-xs font-semibold text-[#6B7165] uppercase tracking-wider mb-3">Ingredients</h2>
-            <div className="rounded-xl border border-[#E8E3DC] bg-white overflow-hidden">
-              {ingredients.map((item, i) => (
-                <div
-                  key={i}
-                  className={`flex items-start gap-3 px-4 py-3 text-sm text-[#1A1A18] ${
-                    i < ingredients.length - 1 ? 'border-b border-[#E8E3DC]' : ''
-                  }`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] flex-shrink-0 mt-1.5" />
-                  {item}
-                </div>
-              ))}
+          <section className="py-14 px-6 lg:px-12 bg-surface-low">
+            <div className="max-w-[1200px] mx-auto">
+              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+                What You Need
+              </p>
+              <h2 className="font-serif font-semibold text-[24px] text-on-surface mb-6">
+                Ingredients
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {ingredients.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-xl bg-surface-lowest px-5 py-4 shadow-ambient"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-primary-container flex-shrink-0" />
+                    <span className="text-[15px] text-on-surface">{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
         )}
 
-        {/* Steps */}
+        {/* ── Preparation Steps ─────────────────────────────────────────── */}
         {steps.length > 0 && (
-          <section>
-            <h2 className="text-xs font-semibold text-[#6B7165] uppercase tracking-wider mb-3">Preparation</h2>
-            <div className="flex flex-col gap-3">
-              {steps.map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#2D6A4F] text-white text-xs font-bold flex items-center justify-center mt-0.5">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-[#1A1A18] leading-relaxed pt-0.5">{step}</p>
-                </div>
-              ))}
+          <section className="py-14 px-6 lg:px-12 bg-surface">
+            <div className="max-w-[1200px] mx-auto">
+              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+                Step by Step
+              </p>
+              <h2 className="font-serif font-semibold text-[24px] text-on-surface mb-6">
+                Preparation
+              </h2>
+              <div className="flex flex-col gap-5 max-w-2xl">
+                {steps.map((step, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <span className="flex-shrink-0 w-10 h-10 rounded-full btn-primary flex items-center justify-center text-on-primary text-[14px] font-semibold" style={{ fontFamily: "var(--font-work-sans)" }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <p className="text-[15px] text-on-surface leading-relaxed pt-2">{step}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
         )}
 
-        {/* Cautions */}
+        {/* ── Cautions ──────────────────────────────────────────────────── */}
         {cautions.length > 0 && (
-          <section className="rounded-xl bg-amber-50 border border-amber-200 px-5 py-4">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle size={14} className="text-amber-600" />
-              <h2 className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Cautions & Contraindications</h2>
+          <section className="py-14 px-6 lg:px-12 bg-surface-low">
+            <div className="max-w-[1200px] mx-auto">
+              <div className="rounded-xl bg-tertiary-fixed/30 p-8 max-w-2xl">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <AlertTriangle size={18} className="text-tertiary" />
+                  <h2 className="text-[14px] font-semibold text-tertiary uppercase tracking-[0.05rem]" style={{ fontFamily: "var(--font-work-sans)" }}>
+                    Cautions & Contraindications
+                  </h2>
+                </div>
+                <ul className="flex flex-col gap-3">
+                  {cautions.map((c, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-[15px] text-tertiary-container leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0 mt-2" />
+                      {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <ul className="flex flex-col gap-2">
-              {cautions.map((c, i) => (
-                <li key={i} className="text-sm text-amber-800 leading-relaxed">
-                  · {c}
-                </li>
-              ))}
-            </ul>
           </section>
         )}
 
-        {/* Sources */}
+        {/* ── Sources ───────────────────────────────────────────────────── */}
         {sources.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-2">
-              <BookOpen size={13} className="text-[#B5CCA9]" />
-              <h2 className="text-xs font-semibold text-[#6B7165] uppercase tracking-wider">Sources</h2>
+          <section className="py-14 px-6 lg:px-12 bg-surface">
+            <div className="max-w-[1200px] mx-auto">
+              <div className="flex items-center gap-2.5 mb-4">
+                <BookOpen size={16} className="text-primary-fixed-dim" />
+                <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container" style={{ fontFamily: "var(--font-work-sans)" }}>
+                  References
+                </p>
+              </div>
+              <ul className="flex flex-col gap-2 max-w-2xl">
+                {sources.map((s, i) => (
+                  <li key={i} className="text-[14px] text-on-surface-variant leading-relaxed">{s}</li>
+                ))}
+              </ul>
             </div>
-            <ul className="flex flex-col gap-1">
-              {sources.map((s, i) => (
-                <li key={i} className="text-sm text-[#6B7165]">{s}</li>
-              ))}
-            </ul>
           </section>
         )}
 
       </main>
 
-      <footer className="py-5 px-4 text-center text-xs text-[#6B7165] border-t border-[#E8E3DC]">
-        This remedy is not clinically tested and does not replace professional medical advice.
-        Always consult a qualified healthcare provider before starting any new health practice.
-      </footer>
+      <Footer />
     </div>
   )
 }

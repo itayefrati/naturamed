@@ -1,22 +1,35 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-[#2D6A4F] px-4 py-5">
-        <div className="max-w-3xl mx-auto">
-          <div className="h-4 w-24 bg-white/20 rounded mb-3" />
-          <div className="h-8 w-40 bg-white/20 rounded" />
+    <div className="min-h-screen">
+      {/* Hero skeleton */}
+      <div className="bg-primary py-12 px-6 lg:px-12">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="h-3 w-48 bg-on-primary/20 rounded mb-4" />
+          <div className="flex items-center gap-4 mt-2">
+            <div className="w-10 h-10 rounded-full bg-on-primary/20" />
+            <div>
+              <div className="h-3 w-20 bg-on-primary/15 rounded mb-2" />
+              <div className="h-8 w-40 bg-on-primary/20 rounded" />
+            </div>
+          </div>
         </div>
       </div>
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-gray-100 p-5 animate-pulse">
-              <div className="h-5 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-100 rounded w-full mt-2" />
-            </div>
-          ))}
+
+      {/* Grid skeleton */}
+      <div className="py-14 px-6 lg:px-12 bg-surface-low animate-pulse">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="h-3 w-28 bg-surface-container rounded mb-6" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-xl bg-surface-lowest p-6 shadow-ambient">
+                <div className="h-4 w-32 bg-surface-container rounded mb-3" />
+                <div className="h-3 w-full bg-surface-container rounded mb-2" />
+                <div className="h-3 w-2/3 bg-surface-container rounded" />
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
