@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, AlertTriangle, BookOpen, Clock } from 'lucide-react'
+import { ChevronRight, ShieldAlert, BookOpen, Clock } from 'lucide-react'
 import Footer from '@/app/ui/Footer'
 
 function toLines(val: string | string[] | null | undefined): string[] {
@@ -35,10 +35,10 @@ export default async function RemedyDetailPage({
     <div className="min-h-screen flex flex-col">
 
       {/* ── Hero / Header ──────────────────────────────────────────────── */}
-      <section className="bg-primary py-12 px-6 lg:px-12">
+      <section className="bg-primary py-14 px-6 lg:px-12">
         <div className="max-w-[1200px] mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-on-primary/60 text-[13px] mb-4 flex-wrap">
+          <nav className="flex items-center gap-1.5 text-on-primary/60 text-[13px] mb-6 flex-wrap">
             <Link href="/" className="hover:text-on-primary transition-colors">Home</Link>
             <ChevronRight size={12} />
             <Link href={`/conditions/${slug}`} className="hover:text-on-primary transition-colors">
@@ -48,29 +48,25 @@ export default async function RemedyDetailPage({
             <span className="text-on-primary">{remedy.name}</span>
           </nav>
 
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
-                Remedy Preparation
-              </p>
-              <h1 className="font-serif font-bold text-[28px] md:text-[36px] text-on-primary leading-tight">
-                {remedy.name}
-              </h1>
-              <div className="flex items-center gap-4 mt-3 flex-wrap">
-                {remedy.source && (
-                  <p className="text-on-primary/65 text-[14px]">{remedy.source}</p>
-                )}
-                {remedy.prep_time && (
-                  <span className="flex items-center gap-1.5 text-on-primary-container text-[13px]">
-                    <Clock size={13} /> {remedy.prep_time}
-                  </span>
-                )}
-              </div>
-            </div>
-            {!remedy.is_curated && (
-              <span className="flex-shrink-0 text-[11px] px-3 py-1 rounded-full bg-on-primary/15 text-on-primary/80 font-medium" style={{ fontFamily: "var(--font-work-sans)" }}>
-                AI Generated
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-primary-container mb-3"
+            style={{ fontFamily: "var(--font-work-sans)" }}
+          >
+            Remedy Preparation
+          </p>
+          <h1 className="font-serif font-bold text-[36px] md:text-[48px] text-on-primary leading-tight tracking-tight">
+            {remedy.name}
+          </h1>
+
+          <div className="flex items-center gap-5 mt-4 flex-wrap">
+            {remedy.prep_time && (
+              <span className="flex items-center gap-1.5 text-on-primary/70 text-[14px]">
+                <Clock size={14} strokeWidth={1.5} />
+                {remedy.prep_time}
               </span>
+            )}
+            {remedy.source && (
+              <p className="text-on-primary/60 text-[14px] italic">{remedy.source}</p>
             )}
           </div>
         </div>
@@ -80,22 +76,25 @@ export default async function RemedyDetailPage({
 
         {/* ── Ingredients ───────────────────────────────────────────────── */}
         {ingredients.length > 0 && (
-          <section className="py-14 px-6 lg:px-12 bg-surface-low">
+          <section className="py-16 px-6 lg:px-12 bg-surface-low">
             <div className="max-w-[1200px] mx-auto">
-              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
                 What You Need
               </p>
-              <h2 className="font-serif font-semibold text-[24px] text-on-surface mb-6">
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface mb-8 tracking-tight">
                 Ingredients
               </h2>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3 max-w-3xl">
                 {ingredients.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 rounded-xl bg-surface-lowest px-5 py-4 shadow-ambient"
+                    className="flex items-start gap-3 rounded-2xl bg-surface-lowest px-5 py-4 shadow-ambient border border-outline-variant/20"
                   >
-                    <span className="w-2 h-2 rounded-full bg-primary-container flex-shrink-0" />
-                    <span className="text-[15px] text-on-surface">{item}</span>
+                    <span className="w-2 h-2 rounded-full bg-primary-container flex-shrink-0 mt-1.5" />
+                    <span className="text-[15px] text-on-surface leading-snug">{item}</span>
                   </div>
                 ))}
               </div>
@@ -105,21 +104,29 @@ export default async function RemedyDetailPage({
 
         {/* ── Preparation Steps ─────────────────────────────────────────── */}
         {steps.length > 0 && (
-          <section className="py-14 px-6 lg:px-12 bg-surface">
+          <section className="py-16 px-6 lg:px-12 bg-surface">
             <div className="max-w-[1200px] mx-auto">
-              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
                 Step by Step
               </p>
-              <h2 className="font-serif font-semibold text-[24px] text-on-surface mb-6">
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface mb-10 tracking-tight">
                 Preparation
               </h2>
-              <div className="flex flex-col gap-5 max-w-2xl">
+              <div className="flex flex-col gap-6 max-w-2xl">
                 {steps.map((step, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <span className="flex-shrink-0 w-10 h-10 rounded-full btn-primary flex items-center justify-center text-on-primary text-[14px] font-semibold" style={{ fontFamily: "var(--font-work-sans)" }}>
+                  <div key={i} className="flex items-start gap-5">
+                    <span
+                      className="flex-shrink-0 w-10 h-10 rounded-full btn-primary flex items-center justify-center text-on-primary text-[13px] font-semibold"
+                      style={{ fontFamily: "var(--font-work-sans)" }}
+                    >
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <p className="text-[15px] text-on-surface leading-relaxed pt-2">{step}</p>
+                    <div className="pt-2 flex-1">
+                      <p className="text-[15px] text-on-surface leading-relaxed">{step}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -129,23 +136,39 @@ export default async function RemedyDetailPage({
 
         {/* ── Cautions ──────────────────────────────────────────────────── */}
         {cautions.length > 0 && (
-          <section className="py-14 px-6 lg:px-12 bg-surface-low">
+          <section className="py-16 px-6 lg:px-12 bg-surface-low">
             <div className="max-w-[1200px] mx-auto">
-              <div className="rounded-xl bg-tertiary-fixed/30 p-8 max-w-2xl">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <AlertTriangle size={18} className="text-tertiary" />
-                  <h2 className="text-[14px] font-semibold text-tertiary uppercase tracking-[0.05rem]" style={{ fontFamily: "var(--font-work-sans)" }}>
-                    Cautions & Contraindications
-                  </h2>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
+                Safety Information
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface mb-8 tracking-tight">
+                Cautions & Contraindications
+              </h2>
+              <div className="rounded-2xl bg-surface-lowest p-8 shadow-ambient border border-outline-variant/30 max-w-2xl">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <ShieldAlert size={20} strokeWidth={1.5} className="text-primary-container" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <p className="font-semibold text-[15px] text-on-surface">
+                      Please note the following before use
+                    </p>
+                    <ul className="flex flex-col gap-2.5">
+                      {cautions.map((c, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2.5 text-[15px] text-on-surface-variant leading-relaxed"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary-container flex-shrink-0 mt-2" />
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <ul className="flex flex-col gap-3">
-                  {cautions.map((c, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-[15px] text-tertiary-container leading-relaxed">
-                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary flex-shrink-0 mt-2" />
-                      {c}
-                    </li>
-                  ))}
-                </ul>
               </div>
             </div>
           </section>
@@ -153,19 +176,30 @@ export default async function RemedyDetailPage({
 
         {/* ── Sources ───────────────────────────────────────────────────── */}
         {sources.length > 0 && (
-          <section className="py-14 px-6 lg:px-12 bg-surface">
+          <section className="py-16 px-6 lg:px-12 bg-surface">
             <div className="max-w-[1200px] mx-auto">
-              <div className="flex items-center gap-2.5 mb-4">
-                <BookOpen size={16} className="text-primary-fixed-dim" />
-                <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container" style={{ fontFamily: "var(--font-work-sans)" }}>
-                  References
-                </p>
-              </div>
-              <ul className="flex flex-col gap-2 max-w-2xl">
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
+                Evidence Base
+              </p>
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface mb-8 tracking-tight">
+                References
+              </h2>
+              <div className="flex flex-col gap-4 max-w-2xl">
                 {sources.map((s, i) => (
-                  <li key={i} className="text-[14px] text-on-surface-variant leading-relaxed">{s}</li>
+                  <div
+                    key={i}
+                    className="rounded-2xl bg-surface-lowest p-6 shadow-ambient border border-outline-variant/20 flex items-start gap-4"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <BookOpen size={16} strokeWidth={1.5} className="text-primary-container" />
+                    </div>
+                    <p className="text-[14px] text-on-surface-variant leading-relaxed">{s}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           </section>
         )}

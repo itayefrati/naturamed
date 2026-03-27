@@ -17,25 +17,26 @@ export default function SearchBar() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-full items-center rounded-full bg-surface-lowest shadow-ambient overflow-hidden focus-within:ring-2 focus-within:ring-primary-container/20 transition-all duration-200"
+      className="flex w-full items-center rounded-full bg-surface-lowest shadow-ambient-lg overflow-hidden border border-outline-variant/20 focus-within:border-primary-container/30 focus-within:shadow-ambient-lg transition-all duration-200"
     >
       <div className="relative flex-1 flex items-center">
         <Search
-          size={18}
-          className="absolute left-5 text-on-surface-variant pointer-events-none shrink-0"
-          strokeWidth={2}
+          size={17}
+          className="absolute left-5 text-outline pointer-events-none shrink-0"
+          strokeWidth={1.5}
         />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search a condition, herb, or symptom..."
-          className="w-full pl-12 pr-4 py-4 bg-transparent text-on-surface placeholder-on-surface-variant text-[16px] font-sans focus:outline-none"
+          placeholder="Search a condition, herb, or symptom…"
+          className="w-full pl-11 pr-4 py-4 bg-transparent text-on-surface placeholder:text-outline text-[15px] focus:outline-none"
         />
       </div>
       <button
         type="submit"
-        className="shrink-0 px-7 py-4 btn-primary text-[15px] font-semibold font-sans"
+        className="shrink-0 mr-1.5 my-1.5 px-6 py-2.5 btn-primary rounded-full text-[14px] font-semibold"
+        style={{ fontFamily: "var(--font-work-sans)" }}
       >
         Search
       </button>

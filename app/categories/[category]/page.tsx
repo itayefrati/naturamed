@@ -39,11 +39,6 @@ export default async function CategoryPage({
           </nav>
 
           <div className="flex items-center gap-4 mt-2">
-            {catDef?.emoji && (
-              <span className="text-4xl" role="img" aria-label={meta.label}>
-                {catDef.emoji}
-              </span>
-            )}
             <div>
               <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-1" style={{ fontFamily: "var(--font-work-sans)" }}>
                 Category

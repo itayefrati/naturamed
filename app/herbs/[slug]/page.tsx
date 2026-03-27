@@ -2,18 +2,30 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowRight,
-  AlertTriangle,
+  ShieldAlert,
   BookOpen,
   ChevronRight,
+  Leaf,
+  Coffee,
+  Droplets,
+  Utensils,
+  FlaskConical,
+  Wind,
+  Package,
+  Hand,
+  Layers,
 } from "lucide-react";
 import Footer from "@/app/ui/Footer";
 import { supabase } from "@/lib/supabase";
+import type { LucideProps } from "lucide-react";
+import type { ForwardRefExoticComponent, RefAttributes } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+type LucideIcon = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+
 type Preparation = {
   method: string;
-  icon: string;
   description: string;
 };
 
@@ -27,16 +39,52 @@ type HerbData = {
   name: string;
   latinName: string;
   family: string;
-  emoji: string;
   history: string;
   overview: string;
   properties: string[];
   preparations: Preparation[];
   cautions: string[];
   sources: string[];
-  funFact: string | null;
   relatedRemedies: RelatedRemedy[];
 };
+
+// ─── Stitch-confirmed botanical photos ──────────────────────────────────────
+
+const STITCH_PHOTOS: Record<string, string> = {
+  "ginger":
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuB3XQfnBW_0jltiiOPfJXz6abax4aUJhubvkAG2a5NrktmczJBDNjcw_iUiL1Qo1QTUFyS8begvtuTqjYVyXuJ-3uBRZCki-2XsPNy1cwQnOG7HD8C6QFq1hLos2nbhVJ9DCmEnJyN09GZsUMQGk9sn3ySvpvs3aiOUFDc51l2eLK9UtA8woTnGsFq3732NAEc2ckjzVa2E1ONL6ZkxZU5VPkuS1ICZm2Au88lyth3NKuah6fQi0drTR_V_RobakEKjkV292gUWJQ",
+  "lavender":
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuD0FMBMFflRGMRWX9_EZd48ivctzNkYvw_fwDOF-oFp5HoIZDzIrO2WsMOn1F76qQlBKYMUCKgCLUppkyjm37ouo3WGWeD2toos3WB0MckOEhXONROBXkzvTWJtC2kW07S2JBU-3iPEbfTkNoG6wOYBA1uEotuN7yM-dsdTRhGaWJ_jfbPmBtEiujeHydzoN1xZREhBb_dZM-lv5JlTKhtpWLoRPGawc26fryXXV0mAbAUDs-IwBwrAnLQIDZY16MoGYw-TueHV2g",
+  "echinacea":
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuA9Utff1kMBtQiIdhWOniB9xVyINxcf5kvFACGkA1f6ZgPOSVmG0oliFOpoqBQrd0_beyHktynRySlTDCdE-nKwSPbUywKB2DnyyEGi9yaS6IGQoSAkcJMvK3WPC4_7IlHRImsKfVkD41B6eISKw4RPCkaKM9nfjSBwWfooCIG3mgCFUvLCECd7HyHsYwFSVXtz_S5LSNq66evcN3nHTawIBZBngLJUIgP9RVhK0Vlw9GFMxv9FRYZZEMZ_Lh0nrWEq6ikl14tG1w",
+  "st-johns-wort":
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDGTFRkr1IHD-jU8UnbbOKrLw3DkTIycPVWoBybM3YZ0zNQQe8DptgKCfoeRglRIqFgtk5nt_3eFTlBp3bxSpGyZpFYZ49F8_43TJXKPTqj8CiwOo_nxkpGBemHWjvVrcgcpMbLZ0rnHBLKGEApjUNpoRemoDieUKfiGQ1ZZ8BNUpEbMfxR01ZDjetEln7fW2lkQRaFnPchYRNgwQPPmnrEUFt2M1IwgET-XoFQOvzzp-g9YCiXD8aEUQ7eB5HQueb1UiypKRF6sg",
+};
+
+// ─── Preparation method icons (lucide-react) ─────────────────────────────────
+
+const METHOD_ICONS: Record<string, LucideIcon> = {
+  tea: Coffee,
+  infusion: Coffee,
+  decoction: Coffee,
+  tincture: FlaskConical,
+  culinary: Utensils,
+  topical: Hand,
+  capsule: Package,
+  poultice: Hand,
+  oil: Droplets,
+  compress: Layers,
+  inhalation: Wind,
+  powder: Package,
+  salve: Layers,
+  smoothie: Coffee,
+  syrup: Droplets,
+  bath: Droplets,
+};
+
+function getMethodIcon(method: string): LucideIcon {
+  return METHOD_ICONS[method.toLowerCase().trim()] ?? Leaf;
+}
 
 // ─── Fallback data ──────────────────────────────────────────────────────────
 
@@ -45,7 +93,6 @@ const FALLBACK_HERBS: Record<string, HerbData> = {
     name: "Turmeric",
     latinName: "Curcuma longa",
     family: "Zingiberaceae",
-    emoji: "\u{1F33F}",
     history:
       "Revered for over 4,000 years in Ayurvedic medicine, turmeric has been called the \u2018Golden Spice\u2019 for its profound healing properties. Ancient texts describe it as a purifier of the body and a bridge between the physical and spiritual realms. From the temples of India to the apothecaries of the Middle East, turmeric has traveled the Silk Road, leaving its golden mark on every civilization it touched.",
     overview:
@@ -60,25 +107,21 @@ const FALLBACK_HERBS: Record<string, HerbData> = {
     preparations: [
       {
         method: "Tea",
-        icon: "\u{1F375}",
         description:
           "Steep 1 tsp ground turmeric in hot water for 10 minutes. Add honey and black pepper to enhance absorption.",
       },
       {
         method: "Tincture",
-        icon: "\u{1F9EA}",
         description:
           "Take 30\u201360 drops of turmeric tincture in water, 2\u20133 times daily. Best taken with meals.",
       },
       {
         method: "Culinary",
-        icon: "\u{1F373}",
         description:
           "Add to curries, golden milk, soups, and smoothies. Always pair with black pepper for bioavailability.",
       },
       {
         method: "Topical",
-        icon: "\u2728",
         description:
           "Mix with coconut oil for a paste. Apply to skin for inflammation and wounds. Patch test first.",
       },
@@ -92,7 +135,6 @@ const FALLBACK_HERBS: Record<string, HerbData> = {
       "Hewlings, S.J. & Kalman, D.S. (2017). Curcumin: A Review of Its Effects on Human Health. Foods, 6(10), 92.",
       "Prasad, S. & Aggarwal, B.B. (2011). Turmeric, the Golden Spice. Herbal Medicine: Biomolecular and Clinical Aspects, 2nd edition.",
     ],
-    funFact: null,
     relatedRemedies: [
       {
         name: "Golden Milk Latte",
@@ -112,32 +154,6 @@ const FALLBACK_HERBS: Record<string, HerbData> = {
     ],
   },
 };
-
-// ─── Generic icons for usage methods ────────────────────────────────────────
-
-const METHOD_ICONS: Record<string, string> = {
-  tea: "\u{1F375}",
-  tincture: "\u{1F9EA}",
-  culinary: "\u{1F373}",
-  topical: "\u2728",
-  capsule: "\u{1F48A}",
-  poultice: "\u{1FA79}",
-  oil: "\u{1F9F4}",
-  bath: "\u{1F6C1}",
-  compress: "\u{1FA79}",
-  inhalation: "\u{1F4A8}",
-  powder: "\u2728",
-  decoction: "\u{1F375}",
-  infusion: "\u{1F375}",
-  salve: "\u{1F9F4}",
-  syrup: "\u{1F36F}",
-  smoothie: "\u{1F964}",
-};
-
-function getMethodIcon(method: string): string {
-  const key = method.toLowerCase().trim();
-  return METHOD_ICONS[key] || "\u{1F33F}";
-}
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 
@@ -165,11 +181,9 @@ export default async function HerbDetailPage({
   let herb: HerbData;
 
   if (!error && dbHerb) {
-    // Map DB columns to our template shape
     const usageMethods: string[] = dbHerb.usage_methods || [];
     const preparations: Preparation[] = usageMethods.map((method: string) => ({
       method,
-      icon: getMethodIcon(method),
       description: `Prepared as ${method.toLowerCase()} — follow traditional preparation guidelines for best results.`,
     }));
 
@@ -190,22 +204,21 @@ export default async function HerbDetailPage({
       name: dbHerb.name,
       latinName: dbHerb.latin_name || "",
       family: dbHerb.family || "",
-      emoji: "\u{1F33F}",
       history: dbHerb.fun_fact || "",
       overview: dbHerb.description || "",
       properties: dbHerb.medicinal_properties || [],
       preparations,
       cautions: dbHerb.precautions || [],
       sources: dbHerb.sources || [],
-      funFact: dbHerb.fun_fact || null,
       relatedRemedies: remedyLinks,
     };
   } else {
-    // Fall back to hardcoded data
     const fallback = FALLBACK_HERBS[slug];
     if (!fallback) notFound();
     herb = fallback;
   }
+
+  const herbPhoto = STITCH_PHOTOS[slug];
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">
@@ -243,9 +256,21 @@ export default async function HerbDetailPage({
       {/* ── Hero ────────────────────────────────────────────────────────── */}
       <section className="px-6 lg:px-12 pt-8 pb-16 bg-surface">
         <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-10 items-center">
-          {/* Botanical image placeholder */}
-          <div className="aspect-[4/5] rounded-2xl bg-primary-fixed/30 flex items-center justify-center">
-            <span className="text-[120px] leading-none">{herb.emoji}</span>
+          {/* Botanical image */}
+          <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-primary/8 flex items-center justify-center border border-outline-variant/20">
+            {herbPhoto ? (
+              <img
+                src={herbPhoto}
+                alt={herb.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Leaf
+                size={72}
+                strokeWidth={1}
+                className="text-primary/20"
+              />
+            )}
           </div>
 
           {/* Herb identity */}
@@ -306,7 +331,7 @@ export default async function HerbDetailPage({
         <div className="max-w-[1200px] mx-auto">
           <div className="grid md:grid-cols-2 gap-10">
             {/* Classification card */}
-            <div className="rounded-2xl bg-surface-lowest p-8 shadow-ambient flex flex-col gap-4">
+            <div className="rounded-2xl bg-surface-lowest p-8 shadow-ambient border border-outline-variant/20 flex flex-col gap-4">
               <p
                 className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container"
                 style={{ fontFamily: "var(--font-work-sans)" }}
@@ -334,7 +359,7 @@ export default async function HerbDetailPage({
             </div>
 
             {/* Bioactive compounds card */}
-            <div className="rounded-2xl bg-surface-lowest p-8 shadow-ambient flex flex-col gap-4">
+            <div className="rounded-2xl bg-surface-lowest p-8 shadow-ambient border border-outline-variant/20 flex flex-col gap-4">
               <p
                 className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container"
                 style={{ fontFamily: "var(--font-work-sans)" }}
@@ -368,7 +393,7 @@ export default async function HerbDetailPage({
               {herb.properties.map((property) => (
                 <span
                   key={property}
-                  className="inline-flex items-center px-5 py-2.5 rounded-full bg-secondary-container text-on-secondary-container text-[14px] font-semibold"
+                  className="inline-flex items-center px-5 py-2.5 rounded-full bg-surface-lowest border border-outline-variant/40 text-on-surface text-[14px] font-medium"
                   style={{ fontFamily: "var(--font-work-sans)" }}
                 >
                   {property}
@@ -379,7 +404,7 @@ export default async function HerbDetailPage({
         </section>
       )}
 
-      {/* ── Clinical Application — Preparation Methods ──────────────────── */}
+      {/* ── Preparation Methods ──────────────────────────────────────────── */}
       {herb.preparations.length > 0 && (
         <section className="px-6 lg:px-12 py-16 bg-surface">
           <div className="max-w-[1200px] mx-auto">
@@ -395,20 +420,29 @@ export default async function HerbDetailPage({
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {herb.preparations.map((prep) => (
-                <div
-                  key={prep.method}
-                  className="rounded-2xl bg-surface-lowest p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-4"
-                >
-                  <span className="text-[40px] leading-none">{prep.icon}</span>
-                  <h3 className="font-semibold text-[18px] text-on-surface">
-                    {prep.method}
-                  </h3>
-                  <p className="text-[14px] text-on-surface-variant leading-relaxed flex-1">
-                    {prep.description}
-                  </p>
-                </div>
-              ))}
+              {herb.preparations.map((prep) => {
+                const MethodIcon = getMethodIcon(prep.method);
+                return (
+                  <div
+                    key={prep.method}
+                    className="rounded-2xl bg-surface-lowest p-7 shadow-ambient border border-outline-variant/20 hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary/8 flex items-center justify-center">
+                      <MethodIcon
+                        size={18}
+                        strokeWidth={1.5}
+                        className="text-primary-container"
+                      />
+                    </div>
+                    <h3 className="font-semibold text-[18px] text-on-surface">
+                      {prep.method}
+                    </h3>
+                    <p className="text-[14px] text-on-surface-variant leading-relaxed flex-1">
+                      {prep.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -420,7 +454,7 @@ export default async function HerbDetailPage({
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center mb-10">
               <p
-                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-tertiary mb-3"
+                className="text-[12px] font-semibold uppercase tracking-[0.06rem] text-primary-container mb-3"
                 style={{ fontFamily: "var(--font-work-sans)" }}
               >
                 Safety Information
@@ -429,22 +463,26 @@ export default async function HerbDetailPage({
                 Contraindications & Cautions
               </h2>
             </div>
-            <div className="max-w-2xl mx-auto rounded-2xl bg-tertiary-fixed/30 p-8">
+            <div className="max-w-2xl mx-auto rounded-2xl bg-surface-lowest p-8 shadow-ambient border border-outline-variant/30">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertTriangle size={20} className="text-tertiary" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <ShieldAlert
+                    size={20}
+                    strokeWidth={1.5}
+                    className="text-primary-container"
+                  />
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="font-semibold text-[16px] text-tertiary">
+                  <p className="font-semibold text-[16px] text-on-surface">
                     Please note the following before use
                   </p>
                   <ul className="flex flex-col gap-2.5">
                     {herb.cautions.map((caution, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-2.5 text-[15px] text-on-surface leading-relaxed"
+                        className="flex items-start gap-2.5 text-[15px] text-on-surface-variant leading-relaxed"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-tertiary mt-2 shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-container mt-2 shrink-0" />
                         {caution}
                       </li>
                     ))}
@@ -456,7 +494,7 @@ export default async function HerbDetailPage({
         </section>
       )}
 
-      {/* ── Scientific Standards ─────────────────────────────────────────── */}
+      {/* ── Scientific Sources ───────────────────────────────────────────── */}
       {herb.sources.length > 0 && (
         <section className="px-6 lg:px-12 py-16 bg-surface">
           <div className="max-w-[1200px] mx-auto">
@@ -475,10 +513,14 @@ export default async function HerbDetailPage({
               {herb.sources.map((source, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl bg-surface-lowest p-6 shadow-ambient flex items-start gap-4"
+                  className="rounded-2xl bg-surface-lowest p-6 shadow-ambient border border-outline-variant/20 flex items-start gap-4"
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary-fixed/40 flex items-center justify-center shrink-0">
-                    <BookOpen size={16} className="text-primary-container" />
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <BookOpen
+                      size={16}
+                      strokeWidth={1.5}
+                      className="text-primary-container"
+                    />
                   </div>
                   <p className="text-[14px] text-on-surface-variant leading-relaxed">
                     {source}
@@ -510,15 +552,15 @@ export default async function HerbDetailPage({
                 <Link
                   key={remedy.name}
                   href={`/conditions/${remedy.slug}`}
-                  className="group rounded-2xl bg-surface-lowest p-7 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-3"
+                  className="group rounded-2xl bg-surface-lowest p-7 shadow-ambient border border-outline-variant/20 hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-3"
                 >
                   <span
-                    className="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[12px] font-semibold w-fit"
+                    className="inline-block text-[11px] font-semibold uppercase tracking-[0.05rem] text-primary-container w-fit"
                     style={{ fontFamily: "var(--font-work-sans)" }}
                   >
                     {remedy.condition}
                   </span>
-                  <h3 className="font-semibold text-[18px] text-on-surface leading-snug">
+                  <h3 className="font-serif font-semibold text-[18px] text-on-surface leading-snug">
                     {remedy.name}
                   </h3>
                   <span className="flex items-center gap-1.5 text-[14px] text-primary-container font-medium mt-auto pt-2 group-hover:underline">

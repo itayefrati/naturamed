@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, DM_Sans, Work_Sans } from "next/font/google";
+import { Playfair_Display, DM_Sans, Work_Sans, Noto_Serif } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/app/ui/Navbar";
 import EntryModal from "@/app/ui/EntryModal";
@@ -8,6 +8,13 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
   display: "swap",
+});
+
+const notoSerif = Noto_Serif({
+  subsets: ["latin"],
+  variable: "--font-noto-serif",
+  display: "swap",
+  weight: ["400", "600", "700"],
 });
 
 const dmSans = DM_Sans({
@@ -37,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${dmSans.variable} ${workSans.variable} h-full antialiased`}
+      className={`${playfair.variable} ${notoSerif.variable} ${dmSans.variable} ${workSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-surface text-on-surface">
         <Navbar />

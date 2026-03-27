@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, AlertTriangle, ArrowRight } from 'lucide-react'
+import { ChevronRight, ArrowRight, Clock } from 'lucide-react'
 import Footer from '@/app/ui/Footer'
 
 type Cause = { id: string; label: string; description: string }
@@ -46,10 +46,10 @@ export default async function ConditionPage({
     <div className="min-h-screen flex flex-col">
 
       {/* ── Hero / Header ──────────────────────────────────────────────── */}
-      <section className="bg-primary py-12 px-6 lg:px-12">
+      <section className="bg-primary py-14 px-6 lg:px-12">
         <div className="max-w-[1200px] mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-on-primary/60 text-[13px] mb-4">
+          <nav className="flex items-center gap-1.5 text-on-primary/60 text-[13px] mb-6">
             <Link href="/" className="hover:text-on-primary transition-colors">Home</Link>
             {condition.category && (
               <>
@@ -66,14 +66,17 @@ export default async function ConditionPage({
             <span className="text-on-primary">{condition.name}</span>
           </nav>
 
-          <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-primary-container mb-3"
+            style={{ fontFamily: "var(--font-work-sans)" }}
+          >
             Condition Guide
           </p>
-          <h1 className="font-serif font-bold text-[32px] md:text-[40px] text-on-primary leading-tight">
+          <h1 className="font-serif font-bold text-[36px] md:text-[48px] text-on-primary leading-tight tracking-tight">
             {condition.name}
           </h1>
           {condition.summary && (
-            <p className="text-on-primary/75 text-[16px] mt-3 max-w-2xl leading-relaxed">
+            <p className="text-on-primary/75 text-[16px] mt-4 max-w-2xl leading-relaxed">
               {condition.summary}
             </p>
           )}
@@ -86,17 +89,22 @@ export default async function ConditionPage({
         {causes && causes.length > 0 && (
           <section className="py-16 px-6 lg:px-12 bg-surface-low">
             <div className="max-w-[1200px] mx-auto">
-              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
                 Understanding the Root
               </p>
-              <h2 className="font-serif font-semibold text-[24px] md:text-[30px] text-on-surface mb-8">
+              <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface mb-8 tracking-tight">
                 Common Causes
               </h2>
-
               <div className="grid md:grid-cols-2 gap-5">
                 {(causes as Cause[]).map((cause) => (
-                  <div key={cause.id} className="rounded-xl bg-surface-lowest p-6 shadow-ambient">
-                    <h3 className="font-semibold text-[16px] text-on-surface mb-2">
+                  <div
+                    key={cause.id}
+                    className="rounded-2xl bg-surface-lowest p-6 shadow-ambient border border-outline-variant/20"
+                  >
+                    <h3 className="font-serif font-semibold text-[17px] text-on-surface mb-2">
                       {cause.label}
                     </h3>
                     {cause.description && (
@@ -114,37 +122,34 @@ export default async function ConditionPage({
         {/* ── Natural Remedies ─────────────────────────────────────────── */}
         <section className="py-16 px-6 lg:px-12 bg-surface">
           <div className="max-w-[1200px] mx-auto">
-            <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
+              style={{ fontFamily: "var(--font-work-sans)" }}
+            >
               Botanical Treatments
             </p>
-            <h2 className="font-serif font-semibold text-[24px] md:text-[30px] text-on-surface mb-8">
+            <h2 className="font-serif font-semibold text-[28px] md:text-[34px] text-on-surface mb-8 tracking-tight">
               Natural Remedies
             </h2>
 
             {(!remedies || remedies.length === 0) && (
-              <p className="text-on-surface-variant text-[15px]">No remedies found for this condition yet.</p>
+              <p className="text-on-surface-variant text-[15px]">
+                No remedies found for this condition yet.
+              </p>
             )}
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(remedies as Remedy[] | null)?.map((remedy) => {
-                const cautions = toLines(remedy.cautions)
                 const ingredients = toLines(remedy.ingredients)
                 return (
                   <Link
                     key={remedy.id}
                     href={`/conditions/${slug}/remedies/${remedy.id}`}
-                    className="group rounded-xl bg-surface-lowest p-6 flex flex-col gap-4 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200"
+                    className="group rounded-2xl bg-surface-lowest p-6 flex flex-col gap-3 shadow-ambient border border-outline-variant/20 hover:shadow-ambient-lg hover:-translate-y-1 transition-all duration-200"
                   >
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-[16px] text-on-surface leading-snug">
-                        {remedy.name}
-                      </h3>
-                      {!remedy.is_curated && (
-                        <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-medium" style={{ fontFamily: "var(--font-work-sans)" }}>
-                          AI Generated
-                        </span>
-                      )}
-                    </div>
+                    <h3 className="font-serif font-bold text-[20px] text-on-surface leading-snug">
+                      {remedy.name}
+                    </h3>
 
                     {ingredients.length > 0 && (
                       <p className="text-[13px] text-on-surface-variant leading-relaxed">
@@ -153,27 +158,19 @@ export default async function ConditionPage({
                       </p>
                     )}
 
-                    {remedy.source && (
-                      <p className="text-[12px] text-primary-fixed-dim italic">{remedy.source}</p>
-                    )}
-
-                    {cautions.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {cautions.slice(0, 2).map((c, i) => (
-                          <span
-                            key={i}
-                            className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-medium"
-                          >
-                            <AlertTriangle size={10} />
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <span className="text-[14px] text-primary-container font-medium flex items-center gap-1 mt-auto pt-2 group-hover:underline">
-                      View Remedy <ArrowRight size={14} />
-                    </span>
+                    <div className="flex items-center justify-between mt-auto pt-3">
+                      {remedy.prep_time ? (
+                        <span className="flex items-center gap-1.5 text-[13px] text-on-surface-variant">
+                          <Clock size={13} strokeWidth={1.5} />
+                          {remedy.prep_time}
+                        </span>
+                      ) : (
+                        <span />
+                      )}
+                      <span className="flex items-center gap-1 text-[13px] font-semibold text-primary-container group-hover:underline">
+                        View Remedy <ArrowRight size={13} />
+                      </span>
+                    </div>
                   </Link>
                 )
               })}

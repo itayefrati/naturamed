@@ -3,7 +3,7 @@
 @theme {
   /* ── Fonts ────────────────────────────────────────────────────────── */
   --font-sans: var(--font-dm-sans), "Work Sans", system-ui, sans-serif;
-  --font-serif: var(--font-playfair), "Noto Serif", Georgia, serif;
+  --font-serif: var(--font-noto-serif), var(--font-playfair), "Noto Serif", Georgia, serif;
 
   /* ── Primary (Deep Botanical Green) ───────────────────────────────── */
   --color-primary: #0f5238;
@@ -24,14 +24,14 @@
   --color-tertiary-fixed: #ffdcc4;
   --color-tertiary-fixed-dim: #ffb780;
 
-  /* ── Surfaces (Warm Parchment Tiers) ──────────────────────────────── */
+  /* ── Surfaces (Clean White Tiers) ─────────────────────────────────── */
   --color-surface: #fbf9f8;
-  --color-surface-container: #efeded;
-  --color-surface-high: #eae8e7;
-  --color-surface-highest: #e4e2e2;
-  --color-surface-low: #f5f3f3;
+  --color-surface-container: #f4f1ee;
+  --color-surface-high: #ece8e4;
+  --color-surface-highest: #e5e0db;
+  --color-surface-low: #f4f1ee;
   --color-surface-lowest: #ffffff;
-  --color-surface-dim: #dbdad9;
+  --color-surface-dim: #d8d3cd;
 
   /* ── On-Surface Text ──────────────────────────────────────────────── */
   --color-on-surface: #1b1c1c;
