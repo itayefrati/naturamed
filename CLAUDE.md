@@ -16,11 +16,29 @@ node scripts/seed-symptoms.mjs    # symptoms, symptom_remedies, symptom_herbs
 
 No test suite exists yet.
 
+## Project Status (as of 2026-03-28)
+
+### Completed
+- **Public site** — all routes live: `/`, `/herbs`, `/herbs/[slug]`, `/conditions`, `/conditions/[slug]`, `/remedies`, `/symptoms`, `/symptoms/results`
+- **Admin panel** — full CRUD at `/admin/*` (herbs, conditions, remedies, symptoms, mappings, preparations, tips). Auth-protected via `proxy.ts` + layout guard. Login at `/admin/login`.
+- **Symptom engine** — symptom → remedy/herb junction scoring
+- **Framer Motion animations** — page transitions and card animations
+- **Supabase RLS** — enabled on all tables; anon gets SELECT only; service role bypasses for admin writes
+
+### What's left / potential next steps
+- `/about` page — not yet built
+- Newsletter signup — form exists (`NewsletterForm`) but no backend/email provider wired up
+- User-facing accounts / personalization — out of scope for now
+- SEO metadata — basic Next.js `metadata` exports exist but could be improved
+- Image management — herb photos are hardcoded Stitch CDN URLs; no upload flow yet
+
+---
+
 ## Stack
 
 - **Next.js 16.2.1** App Router — React 19, TypeScript
 - **Tailwind CSS v4** — tokens live in `app/globals.css` under `@theme {}`, NOT in `tailwind.config.js` (there is none)
-- **Supabase** — single client exported from `lib/supabase.ts`; used directly in server components
+- **Supabase** — public client at `lib/supabase.ts`; service role admin client at `lib/supabase-admin.ts` (`server-only`); cookie-based server client at `lib/supabase-server.ts`
 - **Anthropic SDK** — AI fallback at `app/api/ai-healer/route.ts` (POST, returns JSON)
 - Fonts: **Noto Serif** (primary serif), Playfair Display (fallback serif), DM Sans (sans), Work Sans (labels/eyebrows) — all loaded in `app/layout.tsx`
 
@@ -33,8 +51,46 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const { slug } = await params
 ```
 
+### Next.js proxy (middleware)
+`proxy.ts` at the repo root is Next.js 16's renamed `middleware.ts`. The exported function must be named `proxy` (not `middleware`). It guards `/admin/*` using `supabase.auth.getUser()` — a network call required for security (not `getSession()`).
+
+### Admin panel structure
+```
+app/admin/
+  login/page.tsx          ← public, no layout (sits outside route group)
+  (panel)/
+    layout.tsx            ← secondary auth guard + sidebar/header shell
+    page.tsx              ← dashboard (stat counts + quick actions)
+    herbs/[id]/page.tsx   ← create (id="new") or edit herb
+    conditions/[id]/page.tsx
+    remedies/[id]/page.tsx
+    symptoms/[id]/page.tsx
+    mappings/page.tsx     ← SymptomMappingEditor (all junctions on one page)
+    preparations/[id]/page.tsx
+    tips/[id]/page.tsx
+  actions/                ← Server Actions (admin-auth, herbs, conditions, remedies, symptoms, mappings, preparations, tips)
+  ui/                     ← AdminSidebar, AdminHeader, AdminTable, AdminPageHeader,
+                             DeleteButton, FormField, TagInput, NameWithSlug,
+                             CausesEditor, ConditionSelect, SymptomMappingEditor
+```
+
+The `(panel)` route group means its `layout.tsx` only wraps protected pages — the login page gets no layout and no auth redirect, preventing an infinite loop.
+
+### ConditionalNav
+`app/ui/ConditionalNav.tsx` is a client component that reads `usePathname()` and returns `null` for `/admin/*` routes. `app/layout.tsx` imports this instead of `Navbar`/`EntryModal` directly, so the public navbar never appears in the admin panel.
+
+### Admin Server Actions
+All in `app/admin/actions/`. All import `supabaseAdmin` + call `revalidatePath("/admin/...")` + `revalidatePath("/...")` after mutations.
+- `admin-auth.ts` — `signInAction` (redirects to `/admin` on success, `/admin/login?error=1` on failure), `signOutAction`
+- `herbs.ts` — `createHerb`, `updateHerb`, `deleteHerb`; setting `herb_of_day=true` clears all others first
+- `conditions.ts`, `remedies.ts`, `symptoms.ts`, `preparations.ts`, `tips.ts` — standard create/update/delete
+- `mappings.ts` — delete-then-insert pattern for `symptom_remedies` and `symptom_herbs` junction tables
+
+### TagInput serialization
+`TagInput` stores its `string[]` as `JSON.stringify(arr)` in a `<input type="hidden">`. Server Actions parse with `JSON.parse(formData.get("fieldName") as string)`.
+
 ### Data pattern
-Server components fetch from Supabase directly and fall back to hardcoded constants when the DB returns empty. Client components receive data as props. The only client components are those that need state/interaction: `Navbar`, `EntryModal`, `HerbFilter`, `SearchBar`, `SymptomsPage`, `NewsletterForm`.
+Server components fetch from Supabase directly and fall back to hardcoded constants when the DB returns empty. Client components receive data as props. The only client components are those that need state/interaction: `Navbar`, `EntryModal`, `HerbFilter`, `SearchBar`, `SymptomsPage`, `NewsletterForm`, and all `app/admin/ui/` components that use state or browser APIs.
 
 ### Design system
 All color/shadow/typography utilities come from CSS variables defined in `app/globals.css`. Key custom classes:
@@ -101,6 +157,13 @@ When selecting joined relations (e.g., `.select("remedies(id, name, ...)")`), ca
 
 ### Seed scripts
 The seed scripts parse `.env.local` manually with `fs.readFileSync` (no dotenv dependency). They clear tables with `.delete().neq("id", "00000000-...")` before inserting, since Supabase requires a real constraint for `upsert` conflict resolution.
+
+### Supabase clients (three distinct clients)
+| Client | File | Auth | When to use |
+|---|---|---|---|
+| Public | `lib/supabase.ts` | anon key | Public server components reading data |
+| Server | `lib/supabase-server.ts` | cookie session | Auth checks in layouts/server actions |
+| Admin | `lib/supabase-admin.ts` | service role | All admin write operations; `server-only` import guard |
 
 ## Design Rules
 

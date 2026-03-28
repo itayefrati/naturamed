@@ -3,14 +3,14 @@ import { supabaseAdmin } from "@/lib/supabase-admin"
 import AdminPageHeader from "@/app/admin/ui/AdminPageHeader"
 import AdminTable from "@/app/admin/ui/AdminTable"
 import { deleteHerb } from "@/app/admin/actions/herbs"
-import { CheckCircle } from "lucide-react"
+import { CheckCircle, ExternalLink } from "lucide-react"
 
 export const metadata = { title: "Herbs — NaturaMed Admin" }
 
 export default async function AdminHerbsPage() {
   const { data: herbs } = await supabaseAdmin
     .from("herbs")
-    .select("id, name, slug, latin_name, herb_of_day, created_at")
+    .select("id, name, slug, herb_of_day, created_at")
     .order("name")
 
   return (
@@ -29,13 +29,19 @@ export default async function AdminHerbsPage() {
         columns={[
           { key: "name", label: "Name" },
           {
-            key: "latin_name",
-            label: "Latin Name",
+            key: "slug",
+            label: "Slug",
             render: (row) => (
-              <span className="text-on-surface-variant italic">{row.latin_name ?? "—"}</span>
+              <Link
+                href={`/herbs/${row.slug}`}
+                target="_blank"
+                className="flex items-center gap-1 font-mono text-[12px] text-on-surface-variant hover:text-primary-container transition-colors"
+              >
+                {row.slug}
+                <ExternalLink size={11} strokeWidth={1.5} />
+              </Link>
             ),
           },
-          { key: "slug", label: "Slug", render: (row) => <span className="font-mono text-[12px]">{row.slug}</span> },
           {
             key: "herb_of_day",
             label: "Herb of Day",

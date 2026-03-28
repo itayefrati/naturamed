@@ -9,9 +9,11 @@ env.split("\n").forEach((l) => {
   if (k) vars[k.trim()] = v.join("=").trim();
 });
 
+// Use service role key so seed scripts bypass RLS
 const supabase = createClient(
   vars.NEXT_PUBLIC_SUPABASE_URL,
-  vars.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  vars.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
 // ── Remedy ID Map ────────────────────────────────────────────────────────────

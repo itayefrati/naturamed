@@ -2,33 +2,9 @@
 
 import Link from "next/link";
 import { StaggerContainer, StaggerItem } from "@/app/ui/motion/StaggerContainer";
+import { CATEGORIES } from "@/lib/categories";
 
-export type Category = {
-  label: string;
-  slug: string;
-  description: string;
-};
-
-export const CATEGORIES: Category[] = [
-  { label: "Beauty",               slug: "beauty",               description: "Skin, hair & cosmetic wellness"         },
-  { label: "Anti-Aging",           slug: "anti-aging",           description: "Herbs & practices for longevity"        },
-  { label: "Brain Health",         slug: "brain-health",         description: "Focus, memory & cognition"              },
-  { label: "Reproductive Health",  slug: "reproductive-health",  description: "Fertility & hormonal balance"           },
-  { label: "Sleep",                slug: "sleep",                description: "Natural sleep aids & routines"          },
-  { label: "Oral Health",          slug: "oral-health",          description: "Gums, breath & dental care"             },
-  { label: "Parasite Cleanse",     slug: "parasite-cleanse",     description: "Internal cleansing protocols"           },
-  { label: "Vitamins",             slug: "vitamins",             description: "Nutrients naturally through food"       },
-  { label: "Allergies",            slug: "allergies",            description: "Calming allergic reactions"             },
-  { label: "Mental Wellness",      slug: "mental-wellness",      description: "Stress, anxiety & relaxation"           },
-  { label: "Digestion & Gut",      slug: "digestion-gut-health", description: "Bloating & digestive comfort"           },
-  { label: "Pain & Inflammation",  slug: "pain-inflammation",    description: "Joint pain & muscle soreness"           },
-  { label: "Head",                 slug: "head",                 description: "Headache & migraine remedies"           },
-  { label: "Throat",               slug: "throat",               description: "Sore throat, cough & congestion"        },
-  { label: "Skin & Wounds",        slug: "skin-wounds",          description: "Rashes, eczema & psoriasis"             },
-  { label: "Eyes",                 slug: "eyes",                 description: "Eye strain, dryness & irritation"       },
-  { label: "Ears",                 slug: "ears",                 description: "Earache, infection & tinnitus"          },
-  { label: "Fever & Immune",       slug: "fever-immune",         description: "Cold, flu, fever & immunity"            },
-];
+export type { Category } from "@/lib/categories";
 
 export default function CategoryGrid() {
   return (

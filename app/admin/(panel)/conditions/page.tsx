@@ -1,14 +1,16 @@
+import Link from "next/link"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import AdminPageHeader from "@/app/admin/ui/AdminPageHeader"
 import AdminTable from "@/app/admin/ui/AdminTable"
 import { deleteCondition } from "@/app/admin/actions/conditions"
+import { ExternalLink } from "lucide-react"
 
 export const metadata = { title: "Conditions — NaturaMed Admin" }
 
 export default async function AdminConditionsPage() {
   const { data: conditions } = await supabaseAdmin
     .from("conditions")
-    .select("id, name, slug, category, causes")
+    .select("id, name, slug, category")
     .order("category")
     .order("name")
 
@@ -28,14 +30,19 @@ export default async function AdminConditionsPage() {
         columns={[
           { key: "name", label: "Name" },
           { key: "category", label: "Category" },
-          { key: "slug", label: "Slug", render: (row) => <span className="font-mono text-[12px]">{row.slug}</span> },
           {
-            key: "causes",
-            label: "Causes",
-            render: (row) => {
-              const count = Array.isArray(row.causes) ? row.causes.length : 0
-              return <span className="text-on-surface-variant">{count}</span>
-            },
+            key: "slug",
+            label: "Slug",
+            render: (row) => (
+              <Link
+                href={`/conditions/${row.slug}`}
+                target="_blank"
+                className="flex items-center gap-1 font-mono text-[12px] text-on-surface-variant hover:text-primary-container transition-colors"
+              >
+                {row.slug}
+                <ExternalLink size={11} strokeWidth={1.5} />
+              </Link>
+            ),
           },
         ]}
       />

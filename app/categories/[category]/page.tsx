@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { CATEGORY_MAP } from '@/lib/categories'
-import { CATEGORIES } from '@/app/ui/CategoryGrid'
+import { CATEGORIES } from '@/lib/categories'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronRight, ArrowRight } from 'lucide-react'

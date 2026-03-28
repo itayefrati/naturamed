@@ -1,15 +1,16 @@
+import Link from "next/link"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import AdminPageHeader from "@/app/admin/ui/AdminPageHeader"
 import AdminTable from "@/app/admin/ui/AdminTable"
 import { deleteRemedy } from "@/app/admin/actions/remedies"
-import { CheckCircle } from "lucide-react"
+import { CheckCircle, ExternalLink } from "lucide-react"
 
 export const metadata = { title: "Remedies — NaturaMed Admin" }
 
 export default async function AdminRemediesPage() {
   const { data: remedies } = await supabaseAdmin
     .from("remedies")
-    .select("id, name, prep_time, is_curated, conditions(name)")
+    .select("id, name, prep_time, is_curated, conditions(name, slug)")
     .order("name")
 
   type Row = {
@@ -17,7 +18,7 @@ export default async function AdminRemediesPage() {
     name: string
     prep_time: string | null
     is_curated: boolean
-    conditions: { name: string } | null
+    conditions: { name: string; slug: string } | null
   }
 
   return (
@@ -38,11 +39,19 @@ export default async function AdminRemediesPage() {
           {
             key: "condition",
             label: "Condition",
-            render: (row) => (
-              <span className="text-on-surface-variant">
-                {row.conditions?.name ?? "—"}
-              </span>
-            ),
+            render: (row) =>
+              row.conditions?.slug ? (
+                <Link
+                  href={`/conditions/${row.conditions.slug}`}
+                  target="_blank"
+                  className="flex items-center gap-1 text-on-surface-variant hover:text-primary-container transition-colors"
+                >
+                  {row.conditions.name}
+                  <ExternalLink size={11} strokeWidth={1.5} />
+                </Link>
+              ) : (
+                <span className="text-on-surface-variant">—</span>
+              ),
           },
           {
             key: "prep_time",

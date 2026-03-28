@@ -39,14 +39,22 @@ export default async function ConditionFormPage({ params }: Props) {
   const isNew = id === "new"
 
   let condition: Record<string, unknown> | null = null
+  let existingCauses: { label: string; description: string }[] = []
   if (!isNew) {
     const { data } = await supabaseAdmin
       .from("conditions")
-      .select("*")
+      .select("id, name, slug, category, summary")
       .eq("id", id)
       .single()
     if (!data) notFound()
     condition = data
+
+    const { data: causesData } = await supabaseAdmin
+      .from("causes")
+      .select("label, description")
+      .eq("condition_id", id)
+      .order("id")
+    existingCauses = causesData ?? []
   }
 
   const action = isNew ? createCondition : updateCondition
@@ -118,13 +126,7 @@ export default async function ConditionFormPage({ params }: Props) {
           <h3 className="font-serif font-semibold text-[17px] text-on-surface border-b border-outline-variant/20 pb-3">
             Causes
           </h3>
-          <CausesEditor
-            defaultValue={
-              Array.isArray(condition?.causes)
-                ? (condition.causes as { label: string; description: string }[])
-                : []
-            }
-          />
+          <CausesEditor defaultValue={existingCauses} />
         </div>
 
         <div className="flex items-center gap-3">
