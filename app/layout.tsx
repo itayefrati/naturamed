@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans, Work_Sans, Noto_Serif } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/app/ui/Navbar";
-import EntryModal from "@/app/ui/EntryModal";
+import ConditionalNav from "@/app/ui/ConditionalNav";
 import PageTransition from "@/app/ui/motion/PageTransition";
 
 const playfair = Playfair_Display({
@@ -48,8 +47,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${notoSerif.variable} ${dmSans.variable} ${workSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-surface text-on-surface">
-        <Navbar />
-        <EntryModal />
+        <ConditionalNav />
         <PageTransition>{children}</PageTransition>
       </body>
     </html>
