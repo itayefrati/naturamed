@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Search } from "lucide-react";
 import Footer from "@/app/ui/Footer";
+import FloatingOrbs from "@/app/ui/motion/FloatingOrbs";
+import HeroText from "@/app/ui/motion/HeroText";
+import { StaggerContainer, StaggerItem } from "@/app/ui/motion/StaggerContainer";
+import { AnimatePresence, motion } from "framer-motion";
 
 const COMMON_SYMPTOMS = [
   "Headache",
@@ -46,7 +50,6 @@ export default function SymptomsPage() {
   function addSymptom(symptom: string) {
     const trimmed = symptom.trim();
     if (!trimmed) return;
-    // Avoid duplicates (case-insensitive)
     if (symptoms.some((s) => s.toLowerCase() === trimmed.toLowerCase())) return;
     setSymptoms((prev) => [...prev, trimmed]);
     setInputValue("");
@@ -80,28 +83,39 @@ export default function SymptomsPage() {
     <div className="min-h-screen flex flex-col">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="py-20 md:py-28 px-6 lg:px-12 bg-surface">
-        <div className="max-w-[1200px] mx-auto flex flex-col items-center text-center gap-5">
-          <p
-            className="text-[13px] font-medium uppercase tracking-[0.05rem] text-primary-container"
-            style={{ fontFamily: "var(--font-work-sans)" }}
-          >
-            Botanical Assessment
-          </p>
-          <h1 className="font-serif font-bold text-[36px] sm:text-[48px] lg:text-[56px] leading-[1.08] text-on-surface max-w-3xl tracking-tight">
-            Symptom Checker
-          </h1>
-          <p className="text-[18px] text-on-surface-variant max-w-xl leading-relaxed">
-            Describe your symptoms and we&apos;ll suggest natural remedies from
-            our botanical library.
-          </p>
+      <section className="relative py-20 md:py-28 px-6 lg:px-12 bg-surface overflow-hidden">
+        <FloatingOrbs />
+        <div className="relative max-w-[1200px] mx-auto flex flex-col items-center text-center gap-5">
+          <HeroText delay={0.05}>
+            <p
+              className="text-[13px] font-medium uppercase tracking-[0.05rem] text-primary-container"
+              style={{ fontFamily: "var(--font-work-sans)" }}
+            >
+              Botanical Assessment
+            </p>
+          </HeroText>
+          <HeroText delay={0.15}>
+            <h1 className="font-serif font-bold text-[36px] sm:text-[48px] lg:text-[56px] leading-[1.08] text-on-surface max-w-3xl tracking-tight">
+              Symptom Checker
+            </h1>
+          </HeroText>
+          <HeroText delay={0.25}>
+            <p className="text-[18px] text-on-surface-variant max-w-xl leading-relaxed">
+              Describe your symptoms and we&apos;ll suggest natural remedies from
+              our botanical library.
+            </p>
+          </HeroText>
         </div>
       </section>
 
       {/* ── Symptom Input Card ───────────────────────────────────────────── */}
       <section className="px-6 lg:px-12 -mt-6 relative z-10 pb-16">
-        <div className="max-w-[720px] mx-auto rounded-2xl bg-surface-lowest shadow-ambient-lg p-8 md:p-10 flex flex-col gap-6">
-
+        <motion.div
+          className="max-w-[720px] mx-auto rounded-2xl bg-surface-lowest shadow-ambient-lg p-8 md:p-10 flex flex-col gap-6"
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
           {/* Input row */}
           <form onSubmit={handleSubmit} className="flex gap-3">
             <div className="relative flex-1">
@@ -128,7 +142,7 @@ export default function SymptomsPage() {
             </button>
           </form>
 
-          {/* Symptom pills or empty state */}
+          {/* Symptom pills with AnimatePresence */}
           <div className="min-h-[48px]">
             {symptoms.length === 0 ? (
               <p className="text-[14px] text-outline leading-relaxed py-2">
@@ -136,22 +150,29 @@ export default function SymptomsPage() {
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {symptoms.map((symptom, index) => (
-                  <span
-                    key={`${symptom}-${index}`}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-[14px] font-medium group transition-colors duration-150"
-                  >
-                    {symptom}
-                    <button
-                      type="button"
-                      onClick={() => removeSymptom(index)}
-                      className="rounded-full p-0.5 hover:bg-primary-container/20 transition-colors duration-150 cursor-pointer"
-                      aria-label={`Remove ${symptom}`}
+                <AnimatePresence mode="popLayout">
+                  {symptoms.map((symptom, index) => (
+                    <motion.span
+                      key={`${symptom}-${index}`}
+                      layout
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-[14px] font-medium"
                     >
-                      <X size={14} strokeWidth={2.5} />
-                    </button>
-                  </span>
-                ))}
+                      {symptom}
+                      <button
+                        type="button"
+                        onClick={() => removeSymptom(index)}
+                        className="rounded-full p-0.5 hover:bg-primary-container/20 transition-colors duration-150 cursor-pointer"
+                        aria-label={`Remove ${symptom}`}
+                      >
+                        <X size={14} strokeWidth={2.5} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </div>
@@ -166,7 +187,7 @@ export default function SymptomsPage() {
             <Search size={18} strokeWidth={2} />
             Find Remedies
           </button>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── Common Symptoms ──────────────────────────────────────────────── */}
@@ -184,37 +205,41 @@ export default function SymptomsPage() {
             </h2>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+          <StaggerContainer className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
             {COMMON_SYMPTOMS.map((symptom) => {
               const isActive = symptoms.some(
                 (s) => s.toLowerCase() === symptom.toLowerCase()
               );
               return (
-                <button
-                  key={symptom}
-                  type="button"
-                  onClick={() => {
-                    if (isActive) {
-                      setSymptoms((prev) =>
-                        prev.filter(
-                          (s) => s.toLowerCase() !== symptom.toLowerCase()
-                        )
-                      );
-                    } else {
-                      addSymptom(symptom);
-                    }
-                  }}
-                  className={`px-5 py-2.5 rounded-full text-[14px] font-medium transition-all duration-150 cursor-pointer ${
-                    isActive
-                      ? "bg-secondary-container text-on-secondary-container"
-                      : "bg-surface-lowest text-on-surface-variant hover:bg-secondary-container/40 shadow-ambient"
-                  }`}
-                >
-                  {symptom}
-                </button>
+                <StaggerItem key={symptom}>
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      if (isActive) {
+                        setSymptoms((prev) =>
+                          prev.filter(
+                            (s) => s.toLowerCase() !== symptom.toLowerCase()
+                          )
+                        );
+                      } else {
+                        addSymptom(symptom);
+                      }
+                    }}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className={`px-5 py-2.5 rounded-full text-[14px] font-medium transition-colors duration-150 cursor-pointer ${
+                      isActive
+                        ? "bg-secondary-container text-on-secondary-container"
+                        : "bg-surface-lowest text-on-surface-variant hover:bg-secondary-container/40 shadow-ambient"
+                    }`}
+                  >
+                    {symptom}
+                  </motion.button>
+                </StaggerItem>
               );
             })}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -233,9 +258,9 @@ export default function SymptomsPage() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-10">
+          <StaggerContainer className="grid md:grid-cols-3 gap-10">
             {HOW_IT_WORKS_STEPS.map(({ step, title, description }) => (
-              <div key={step} className="flex flex-col items-center text-center gap-5">
+              <StaggerItem key={step} className="flex flex-col items-center text-center gap-5">
                 <div className="w-12 h-12 rounded-full btn-primary flex items-center justify-center shrink-0">
                   <span
                     className="text-on-primary text-[14px] font-semibold tracking-wide"
@@ -250,10 +275,9 @@ export default function SymptomsPage() {
                 <p className="text-[15px] text-on-surface-variant leading-relaxed max-w-xs">
                   {description}
                 </p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
-
+          </StaggerContainer>
         </div>
       </section>
 

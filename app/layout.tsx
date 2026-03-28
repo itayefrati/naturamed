@@ -3,6 +3,7 @@ import { Playfair_Display, DM_Sans, Work_Sans, Noto_Serif } from "next/font/goog
 import "./globals.css";
 import Navbar from "@/app/ui/Navbar";
 import EntryModal from "@/app/ui/EntryModal";
+import PageTransition from "@/app/ui/motion/PageTransition";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -49,7 +50,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-surface text-on-surface">
         <Navbar />
         <EntryModal />
-        {children}
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   );

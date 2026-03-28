@@ -2,6 +2,10 @@ import Link from "next/link";
 import { ArrowRight, Clock, AlertTriangle, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Footer from "@/app/ui/Footer";
+import HeroText from "@/app/ui/motion/HeroText";
+import { StaggerContainer, StaggerItem } from "@/app/ui/motion/StaggerContainer";
+import CardHover from "@/app/ui/motion/CardHover";
+import ScrollReveal from "@/app/ui/motion/ScrollReveal";
 
 function toLines(val: string | string[] | null | undefined): string[] {
   if (!val) return [];
@@ -80,7 +84,6 @@ export default async function SymptomResultsPage({
     }
   }
 
-  // Fallback: if no DB matches, redirect to generic search
   const hasResults = rankedRemedies.length > 0 || matchedHerbs.length > 0;
 
   return (
@@ -95,15 +98,17 @@ export default async function SymptomResultsPage({
             <span className="text-on-primary">Results</span>
           </nav>
 
-          <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
-            Botanical Assessment Results
-          </p>
-          <h1 className="font-serif font-bold text-[28px] md:text-[36px] text-on-primary leading-tight mb-3">
-            Remedies for Your Symptoms
-          </h1>
+          <HeroText delay={0.05}>
+            <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-on-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+              Botanical Assessment Results
+            </p>
+            <h1 className="font-serif font-bold text-[28px] md:text-[36px] text-on-primary leading-tight mb-3">
+              Remedies for Your Symptoms
+            </h1>
+          </HeroText>
 
           {/* Symptom tags */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mt-2">
             {symptomLabels.map((s) => (
               <span key={s} className="px-3 py-1 rounded-full bg-on-primary/15 text-on-primary text-[13px] font-medium" style={{ fontFamily: "var(--font-work-sans)" }}>
                 {s}
@@ -135,54 +140,60 @@ export default async function SymptomResultsPage({
         {rankedRemedies.length > 0 && (
           <section className="py-16 px-6 lg:px-12 bg-surface-low">
             <div className="max-w-[1200px] mx-auto">
-              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
-                Recommended Preparations
-              </p>
-              <h2 className="font-serif font-semibold text-[24px] md:text-[30px] text-on-surface mb-8">
-                {rankedRemedies.length} Matched {rankedRemedies.length === 1 ? "Remedy" : "Remedies"}
-              </h2>
+              <ScrollReveal className="mb-8">
+                <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+                  Recommended Preparations
+                </p>
+                <h2 className="font-serif font-semibold text-[24px] md:text-[30px] text-on-surface">
+                  {rankedRemedies.length} Matched {rankedRemedies.length === 1 ? "Remedy" : "Remedies"}
+                </h2>
+              </ScrollReveal>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rankedRemedies.map((remedy) => {
                   const condition = remedy.conditions as { name: string; slug: string } | null;
                   const cautions = toLines(remedy.cautions as string | string[]);
                   return (
-                    <div key={String(remedy.id)} className="rounded-xl bg-surface-lowest p-6 flex flex-col gap-4 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200">
-                      {condition && (
-                        <span className="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[12px] font-semibold w-fit" style={{ fontFamily: "var(--font-work-sans)" }}>
-                          {condition.name}
-                        </span>
-                      )}
-                      <h3 className="font-semibold text-[16px] text-on-surface leading-snug">
-                        {String(remedy.name)}
-                      </h3>
-                      {!!remedy.source && (
-                        <p className="text-[13px] text-primary-fixed-dim italic">{String(remedy.source)}</p>
-                      )}
-                      <div className="flex items-center justify-between pt-1">
-                        {!!remedy.prep_time && (
-                          <span className="flex items-center gap-1.5 text-[13px] text-on-surface-variant">
-                            <Clock size={13} /> {String(remedy.prep_time)}
-                          </span>
-                        )}
-                        {cautions.length > 0 && (
-                          <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-medium">
-                            <AlertTriangle size={10} /> {cautions[0]}
-                          </span>
-                        )}
-                      </div>
-                      {condition && (
-                        <Link
-                          href={`/conditions/${condition.slug}/remedies/${String(remedy.id)}`}
-                          className="text-[14px] text-primary-container font-medium hover:underline flex items-center gap-1 mt-auto pt-1"
-                        >
-                          View Preparation <ArrowRight size={14} />
-                        </Link>
-                      )}
-                    </div>
+                    <StaggerItem key={String(remedy.id)}>
+                      <CardHover className="h-full">
+                        <div className="rounded-xl bg-surface-lowest p-6 flex flex-col gap-4 shadow-ambient h-full">
+                          {condition && (
+                            <span className="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[12px] font-semibold w-fit" style={{ fontFamily: "var(--font-work-sans)" }}>
+                              {condition.name}
+                            </span>
+                          )}
+                          <h3 className="font-semibold text-[16px] text-on-surface leading-snug">
+                            {String(remedy.name)}
+                          </h3>
+                          {!!remedy.source && (
+                            <p className="text-[13px] text-primary-fixed-dim italic">{String(remedy.source)}</p>
+                          )}
+                          <div className="flex items-center justify-between pt-1">
+                            {!!remedy.prep_time && (
+                              <span className="flex items-center gap-1.5 text-[13px] text-on-surface-variant">
+                                <Clock size={13} /> {String(remedy.prep_time)}
+                              </span>
+                            )}
+                            {cautions.length > 0 && (
+                              <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-medium">
+                                <AlertTriangle size={10} /> {cautions[0]}
+                              </span>
+                            )}
+                          </div>
+                          {condition && (
+                            <Link
+                              href={`/conditions/${condition.slug}/remedies/${String(remedy.id)}`}
+                              className="text-[14px] text-primary-container font-medium hover:underline flex items-center gap-1 mt-auto pt-1"
+                            >
+                              View Preparation <ArrowRight size={14} />
+                            </Link>
+                          )}
+                        </div>
+                      </CardHover>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </StaggerContainer>
             </div>
           </section>
         )}
@@ -191,39 +202,44 @@ export default async function SymptomResultsPage({
         {matchedHerbs.length > 0 && (
           <section className="py-16 px-6 lg:px-12 bg-surface">
             <div className="max-w-[1200px] mx-auto">
-              <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
-                Botanical Allies
-              </p>
-              <h2 className="font-serif font-semibold text-[24px] md:text-[30px] text-on-surface mb-8">
-                Herbs That May Help
-              </h2>
+              <ScrollReveal className="mb-8" delay={0.05}>
+                <p className="text-[12px] font-medium uppercase tracking-[0.05rem] text-primary-container mb-3" style={{ fontFamily: "var(--font-work-sans)" }}>
+                  Botanical Allies
+                </p>
+                <h2 className="font-serif font-semibold text-[24px] md:text-[30px] text-on-surface">
+                  Herbs That May Help
+                </h2>
+              </ScrollReveal>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-5" delay={0.1}>
                 {matchedHerbs.map((herb) => {
                   const props = (herb.medicinal_properties as string[]) ?? [];
                   return (
-                    <Link
-                      key={String(herb.id)}
-                      href={`/herbs/${String(herb.slug)}`}
-                      className="group rounded-xl bg-surface-lowest p-5 flex flex-col gap-3 shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200"
-                    >
-                      <h3 className="font-semibold text-[16px] text-on-surface group-hover:text-primary-container transition-colors">
-                        {String(herb.name)}
-                      </h3>
-                      <div className="flex flex-wrap gap-1.5">
-                        {props.slice(0, 2).map((p) => (
-                          <span key={p} className="text-[11px] px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium" style={{ fontFamily: "var(--font-work-sans)" }}>
-                            {p}
+                    <StaggerItem key={String(herb.id)}>
+                      <CardHover className="h-full">
+                        <Link
+                          href={`/herbs/${String(herb.slug)}`}
+                          className="group rounded-xl bg-surface-lowest p-5 flex flex-col gap-3 shadow-ambient h-full"
+                        >
+                          <h3 className="font-semibold text-[16px] text-on-surface group-hover:text-primary-container transition-colors">
+                            {String(herb.name)}
+                          </h3>
+                          <div className="flex flex-wrap gap-1.5">
+                            {props.slice(0, 2).map((p) => (
+                              <span key={p} className="text-[11px] px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium" style={{ fontFamily: "var(--font-work-sans)" }}>
+                                {p}
+                              </span>
+                            ))}
+                          </div>
+                          <span className="text-[13px] text-primary-container font-medium flex items-center gap-1 mt-auto group-hover:underline">
+                            View Herb <ArrowRight size={13} />
                           </span>
-                        ))}
-                      </div>
-                      <span className="text-[13px] text-primary-container font-medium flex items-center gap-1 mt-auto group-hover:underline">
-                        View Herb <ArrowRight size={13} />
-                      </span>
-                    </Link>
+                        </Link>
+                      </CardHover>
+                    </StaggerItem>
                   );
                 })}
-              </div>
+              </StaggerContainer>
             </div>
           </section>
         )}

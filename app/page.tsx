@@ -4,6 +4,11 @@ import SearchBar from "@/app/ui/SearchBar";
 import CategoryGrid from "@/app/ui/CategoryGrid";
 import Footer from "@/app/ui/Footer";
 import { supabase } from "@/lib/supabase";
+import FloatingOrbs from "@/app/ui/motion/FloatingOrbs";
+import HeroText from "@/app/ui/motion/HeroText";
+import ScrollReveal from "@/app/ui/motion/ScrollReveal";
+import { StaggerContainer, StaggerItem } from "@/app/ui/motion/StaggerContainer";
+import CardHover from "@/app/ui/motion/CardHover";
 
 // ─── Fallback data ────────────────────────────────────────────────────────────
 
@@ -124,28 +129,35 @@ export default async function Home() {
     <div className="min-h-screen flex flex-col">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="py-24 md:py-32 px-6 lg:px-12 bg-surface">
-        <div className="max-w-[1200px] mx-auto flex flex-col items-center text-center gap-8">
+      <section className="relative py-24 md:py-32 px-6 lg:px-12 bg-surface overflow-hidden">
+        <FloatingOrbs />
+        <div className="relative max-w-[1200px] mx-auto flex flex-col items-center text-center gap-8">
 
-          <p
-            className="text-[11px] font-semibold uppercase tracking-[0.1rem] text-on-surface-variant"
-            style={{ fontFamily: "var(--font-work-sans)" }}
-          >
-            Natural &middot; Ancestral &middot; Trustworthy
-          </p>
+          <HeroText delay={0.05}>
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.1rem] text-on-surface-variant"
+              style={{ fontFamily: "var(--font-work-sans)" }}
+            >
+              Natural &middot; Ancestral &middot; Trustworthy
+            </p>
+          </HeroText>
 
-          <h1 className="font-serif font-bold text-[44px] sm:text-[58px] lg:text-[72px] leading-[1.04] text-on-surface max-w-4xl tracking-tight">
-            Healing Knowledge,<br /> Rediscovered.
-          </h1>
+          <HeroText delay={0.15}>
+            <h1 className="font-serif font-bold text-[44px] sm:text-[58px] lg:text-[72px] leading-[1.04] text-on-surface max-w-4xl tracking-tight">
+              Healing Knowledge,<br /> Rediscovered.
+            </h1>
+          </HeroText>
 
-          <p className="font-serif italic text-[19px] md:text-[22px] text-on-surface-variant max-w-2xl leading-relaxed">
-            &ldquo;Because there is no disease in this world that God
-            hasn&apos;t made a cure for.&rdquo;
-          </p>
+          <HeroText delay={0.28}>
+            <p className="font-serif italic text-[19px] md:text-[22px] text-on-surface-variant max-w-2xl leading-relaxed">
+              &ldquo;Because there is no disease in this world that God
+              hasn&apos;t made a cure for.&rdquo;
+            </p>
+          </HeroText>
 
-          <div className="w-full max-w-2xl">
+          <HeroText delay={0.38} className="w-full max-w-2xl">
             <SearchBar />
-          </div>
+          </HeroText>
         </div>
       </section>
 
@@ -153,47 +165,49 @@ export default async function Home() {
       <section className="py-16 px-6 lg:px-12 bg-surface-low">
         <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-6">
 
-          {/* Herb of the Day */}
-          <div className="rounded-2xl bg-surface-lowest p-8 flex flex-col gap-4 shadow-ambient border border-outline-variant/30">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-primary-container"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Herb of the Day
-            </p>
-            <div>
-              <h3 className="font-serif font-bold text-[32px] text-on-surface leading-tight">
-                {HERB_OF_DAY.name}
-              </h3>
-              {HERB_OF_DAY.latinName && (
-                <p className="font-serif italic text-[15px] text-on-surface-variant mt-1">
-                  {HERB_OF_DAY.latinName}
-                </p>
-              )}
-            </div>
-            <p className="text-[15px] text-on-surface-variant leading-relaxed flex-1">
-              {HERB_OF_DAY.property}
-            </p>
-            <Link
-              href={`/herbs/${HERB_OF_DAY.slug}`}
-              className="flex items-center gap-1.5 text-[14px] font-semibold text-primary-container hover:underline mt-2"
-            >
-              View monograph <ArrowRight size={14} />
-            </Link>
-          </div>
+          <ScrollReveal delay={0.05}>
+            <CardHover className="rounded-2xl bg-surface-lowest p-8 flex flex-col gap-4 shadow-ambient border border-outline-variant/30 h-full">
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-primary-container"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
+                Herb of the Day
+              </p>
+              <div>
+                <h3 className="font-serif font-bold text-[32px] text-on-surface leading-tight">
+                  {HERB_OF_DAY.name}
+                </h3>
+                {HERB_OF_DAY.latinName && (
+                  <p className="font-serif italic text-[15px] text-on-surface-variant mt-1">
+                    {HERB_OF_DAY.latinName}
+                  </p>
+                )}
+              </div>
+              <p className="text-[15px] text-on-surface-variant leading-relaxed flex-1">
+                {HERB_OF_DAY.property}
+              </p>
+              <Link
+                href={`/herbs/${HERB_OF_DAY.slug}`}
+                className="flex items-center gap-1.5 text-[14px] font-semibold text-primary-container hover:underline mt-2"
+              >
+                View monograph <ArrowRight size={14} />
+              </Link>
+            </CardHover>
+          </ScrollReveal>
 
-          {/* Daily Wellness Tip */}
-          <div className="rounded-2xl bg-surface-lowest p-8 flex flex-col gap-4 shadow-ambient border border-outline-variant/30">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-primary-container"
-              style={{ fontFamily: "var(--font-work-sans)" }}
-            >
-              Daily Wellness Tip
-            </p>
-            <p className="font-serif text-[19px] text-on-surface leading-[1.65] flex-1">
-              {HEALTH_TIP}
-            </p>
-          </div>
+          <ScrollReveal delay={0.15}>
+            <CardHover className="rounded-2xl bg-surface-lowest p-8 flex flex-col gap-4 shadow-ambient border border-outline-variant/30 h-full">
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-primary-container"
+                style={{ fontFamily: "var(--font-work-sans)" }}
+              >
+                Daily Wellness Tip
+              </p>
+              <p className="font-serif text-[19px] text-on-surface leading-[1.65] flex-1">
+                {HEALTH_TIP}
+              </p>
+            </CardHover>
+          </ScrollReveal>
 
         </div>
       </section>
@@ -201,7 +215,7 @@ export default async function Home() {
       {/* ── Categories ───────────────────────────────────────────────────── */}
       <section id="categories" className="py-20 px-6 lg:px-12 bg-surface">
         <div className="max-w-[1200px] mx-auto">
-          <div className="mb-12">
+          <ScrollReveal className="mb-12">
             <p
               className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
               style={{ fontFamily: "var(--font-work-sans)" }}
@@ -211,7 +225,7 @@ export default async function Home() {
             <h2 className="font-serif font-bold text-[32px] md:text-[42px] text-on-surface tracking-tight">
               What are you looking for?
             </h2>
-          </div>
+          </ScrollReveal>
           <CategoryGrid />
         </div>
       </section>
@@ -219,7 +233,7 @@ export default async function Home() {
       {/* ── How It Works ─────────────────────────────────────────────────── */}
       <section className="py-20 px-6 lg:px-12 bg-surface-low">
         <div className="max-w-[1200px] mx-auto">
-          <div className="mb-14">
+          <ScrollReveal className="mb-14">
             <p
               className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
               style={{ fontFamily: "var(--font-work-sans)" }}
@@ -229,11 +243,11 @@ export default async function Home() {
             <h2 className="font-serif font-bold text-[32px] md:text-[42px] text-on-surface tracking-tight">
               Ancestral Wisdom, Modern Access
             </h2>
-          </div>
+          </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-10">
+          <StaggerContainer className="grid md:grid-cols-3 gap-10">
             {HOW_IT_WORKS.map(({ step, title, description }) => (
-              <div key={step} className="flex flex-col gap-5">
+              <StaggerItem key={step} className="flex flex-col gap-5">
                 <div className="w-12 h-12 rounded-full btn-primary flex items-center justify-center shrink-0">
                   <span
                     className="text-on-primary text-[14px] font-semibold"
@@ -248,16 +262,16 @@ export default async function Home() {
                 <p className="text-[15px] text-on-surface-variant leading-relaxed">
                   {description}
                 </p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* ── Popular Remedies ─────────────────────────────────────────────── */}
       <section className="py-20 px-6 lg:px-12 bg-surface">
         <div className="max-w-[1200px] mx-auto">
-          <div className="mb-12">
+          <ScrollReveal className="mb-12">
             <p
               className="text-[11px] font-semibold uppercase tracking-[0.08rem] text-on-surface-variant mb-3"
               style={{ fontFamily: "var(--font-work-sans)" }}
@@ -267,56 +281,55 @@ export default async function Home() {
             <h2 className="font-serif font-bold text-[32px] md:text-[42px] text-on-surface tracking-tight">
               Featured Preparations
             </h2>
-          </div>
+          </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <StaggerContainer className="grid md:grid-cols-3 gap-6">
             {FEATURED_REMEDIES.map((remedy) => (
-              <div
-                key={remedy.id}
-                className="rounded-2xl bg-surface-lowest overflow-hidden flex flex-col shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-200"
-              >
-                {/* Botanical photograph */}
-                <div className="relative h-52 overflow-hidden">
-                  <img
-                    src={remedy.photo}
-                    alt={remedy.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-
-                <div className="p-6 flex flex-col gap-3 flex-1">
-                  <span
-                    className="text-[11px] font-semibold uppercase tracking-[0.06rem] text-primary-container"
-                    style={{ fontFamily: "var(--font-work-sans)" }}
-                  >
-                    {remedy.condition}
-                  </span>
-
-                  <h3 className="font-serif font-bold text-[21px] text-on-surface leading-snug">
-                    {remedy.name}
-                  </h3>
-
-                  <p className="text-[14px] text-on-surface-variant leading-relaxed line-clamp-3 flex-1">
-                    {remedy.description}
-                  </p>
-
-                  <div className="flex items-center justify-between pt-3 mt-auto">
-                    <span className="flex items-center gap-1.5 text-[13px] text-on-surface-variant">
-                      <Clock size={13} strokeWidth={2} />
-                      {remedy.prep_time}
-                    </span>
-                    <Link
-                      href={`/conditions/${remedy.slug}`}
-                      className="flex items-center gap-1 text-[13px] font-semibold text-primary-container hover:underline"
-                    >
-                      Read Protocol <ArrowRight size={13} />
-                    </Link>
+              <StaggerItem key={remedy.id}>
+                <CardHover className="rounded-2xl bg-surface-lowest overflow-hidden flex flex-col shadow-ambient h-full">
+                  {/* Botanical photograph */}
+                  <div className="relative h-52 overflow-hidden">
+                    <img
+                      src={remedy.photo}
+                      alt={remedy.name}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-              </div>
+
+                  <div className="p-6 flex flex-col gap-3 flex-1">
+                    <span
+                      className="text-[11px] font-semibold uppercase tracking-[0.06rem] text-primary-container"
+                      style={{ fontFamily: "var(--font-work-sans)" }}
+                    >
+                      {remedy.condition}
+                    </span>
+
+                    <h3 className="font-serif font-bold text-[21px] text-on-surface leading-snug">
+                      {remedy.name}
+                    </h3>
+
+                    <p className="text-[14px] text-on-surface-variant leading-relaxed line-clamp-3 flex-1">
+                      {remedy.description}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-3 mt-auto">
+                      <span className="flex items-center gap-1.5 text-[13px] text-on-surface-variant">
+                        <Clock size={13} strokeWidth={2} />
+                        {remedy.prep_time}
+                      </span>
+                      <Link
+                        href={`/conditions/${remedy.slug}`}
+                        className="flex items-center gap-1 text-[13px] font-semibold text-primary-container hover:underline"
+                      >
+                        Read Protocol <ArrowRight size={13} />
+                      </Link>
+                    </div>
+                  </div>
+                </CardHover>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 

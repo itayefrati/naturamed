@@ -100,3 +100,35 @@ body {
 .border-ghost {
   border: 1px solid rgba(191, 201, 193, 0.20);
 }
+
+/* ── Botanical Animations ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%       { transform: translateY(-18px) rotate(2deg); }
+    66%       { transform: translateY(-8px) rotate(-1.5deg); }
+  }
+
+  @keyframes float-drift {
+    0%, 100% { transform: translateX(0px) translateY(0px); }
+    50%       { transform: translateX(14px) translateY(-16px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.06; transform: scale(1); }
+    50%       { opacity: 0.13; transform: scale(1.08); }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50%       { background-position: 100% 50%; }
+  }
+
+  .animate-float-slow  { animation: float-slow  8s ease-in-out infinite; }
+  .animate-float-drift { animation: float-drift 12s ease-in-out infinite; }
+  .animate-pulse-glow  { animation: pulse-glow   6s ease-in-out infinite; }
+  .animate-gradient    {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+}

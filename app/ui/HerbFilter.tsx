@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import CardHover from "@/app/ui/motion/CardHover";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,7 +33,7 @@ const STITCH_PHOTOS: Record<string, string> = {
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const INITIAL_COUNT = 6;
 
-// ─── Circular Serif A–Z Filter ────────────────────────────────────────────────
+// ─── Alphabet Filter Bar with layoutId sliding pill ──────────────────────────
 
 function AlphabetFilterBar({
   activeLetter,
@@ -47,16 +49,23 @@ function AlphabetFilterBar({
       {/* "All" pill */}
       <button
         onClick={() => onSelect(null)}
-        className={`px-4 h-10 flex items-center justify-center rounded-full font-serif text-[15px] border transition-all duration-150 cursor-pointer ${
-          activeLetter === null
-            ? "bg-primary border-primary text-on-primary"
-            : "border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5"
-        }`}
+        className="relative px-4 h-10 flex items-center justify-center rounded-full font-serif text-[15px] border border-outline-variant transition-colors duration-150 cursor-pointer overflow-hidden"
+        style={{
+          color: activeLetter === null ? "var(--color-on-primary)" : "var(--color-on-surface-variant)",
+          borderColor: activeLetter === null ? "transparent" : undefined,
+        }}
       >
-        All
+        {activeLetter === null && (
+          <motion.span
+            layoutId="letter-active-bg"
+            className="absolute inset-0 rounded-full bg-primary"
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          />
+        )}
+        <span className="relative z-10">All</span>
       </button>
 
-      {/* All 26 letters — always rendered */}
+      {/* All 26 letters */}
       {ALPHABET.map((letter) => {
         const isAvailable = availableLetters.has(letter);
         const isActive = activeLetter === letter;
@@ -65,15 +74,29 @@ function AlphabetFilterBar({
             key={letter}
             onClick={() => isAvailable && onSelect(letter)}
             disabled={!isAvailable}
-            className={`w-10 h-10 flex items-center justify-center rounded-full font-serif text-[16px] border transition-all duration-150 ${
-              isActive
-                ? "bg-primary border-primary text-on-primary cursor-pointer"
+            className="relative w-10 h-10 flex items-center justify-center rounded-full font-serif text-[16px] border transition-colors duration-150 overflow-hidden"
+            style={{
+              color: isActive
+                ? "var(--color-on-primary)"
                 : isAvailable
-                  ? "border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5 cursor-pointer"
-                  : "border-outline-variant/50 text-on-surface-variant/50 cursor-default"
-            }`}
+                  ? "var(--color-on-surface-variant)"
+                  : "rgba(64,73,67,0.4)",
+              borderColor: isActive
+                ? "transparent"
+                : isAvailable
+                  ? "var(--color-outline-variant)"
+                  : "rgba(191,201,193,0.4)",
+              cursor: isAvailable ? "pointer" : "default",
+            }}
           >
-            {letter}
+            {isActive && (
+              <motion.span
+                layoutId="letter-active-bg"
+                className="absolute inset-0 rounded-full bg-primary"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              />
+            )}
+            <span className="relative z-10">{letter}</span>
           </button>
         );
       })}
@@ -123,27 +146,39 @@ export default function HerbFilter({ herbs }: { herbs: Herb[] }) {
       <section className="py-16 px-6 lg:px-12 bg-surface flex-1">
         <div className="max-w-[1200px] mx-auto">
 
-          {activeLetter && (
-            <p className="text-[13px] text-on-surface-variant mb-8">
-              Showing herbs starting with{" "}
-              <span className="font-semibold text-on-surface">
-                &ldquo;{activeLetter}&rdquo;
-              </span>
-              {" · "}
-              <button
-                onClick={() => {
-                  setActiveLetter(null);
-                  setShowAll(false);
-                }}
-                className="text-primary-container font-medium hover:underline cursor-pointer"
+          <AnimatePresence mode="wait">
+            {activeLetter && (
+              <motion.p
+                key="filter-label"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="text-[13px] text-on-surface-variant mb-8"
               >
-                Show all
-              </button>
-            </p>
-          )}
+                Showing herbs starting with{" "}
+                <span className="font-semibold text-on-surface">
+                  &ldquo;{activeLetter}&rdquo;
+                </span>
+                {" · "}
+                <button
+                  onClick={() => {
+                    setActiveLetter(null);
+                    setShowAll(false);
+                  }}
+                  className="text-primary-container font-medium hover:underline cursor-pointer"
+                >
+                  Show all
+                </button>
+              </motion.p>
+            )}
+          </AnimatePresence>
 
           {filteredHerbs.length === 0 ? (
-            <div className="text-center py-20">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-20"
+            >
               <p className="text-[17px] text-on-surface-variant">
                 No herbs found for &ldquo;{activeLetter}&rdquo;.
               </p>
@@ -153,59 +188,73 @@ export default function HerbFilter({ herbs }: { herbs: Herb[] }) {
               >
                 Clear filter
               </button>
-            </div>
+            </motion.div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {visibleHerbs.map((herb) => {
-                  const photo = STITCH_PHOTOS[herb.slug];
-                  return (
-                    <Link
-                      key={herb.slug}
-                      href={`/herbs/${herb.slug}`}
-                      className="group rounded-2xl bg-surface-lowest overflow-hidden flex flex-col shadow-ambient hover:shadow-ambient-lg hover:-translate-y-1 transition-all duration-200"
-                    >
-                      {/* Photo — only rendered if a confirmed Stitch photo exists */}
-                      {photo && (
-                        <div className="relative h-52 overflow-hidden">
-                          <img
-                            src={photo}
-                            alt={herb.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            loading="lazy"
-                          />
-                        </div>
-                      )}
-
-                      <div className="p-6 flex flex-col gap-3 flex-1">
-                        {/* Herb name */}
-                        <h3 className="font-serif font-bold text-[22px] text-on-surface leading-snug group-hover:text-primary-container transition-colors duration-200">
-                          {herb.name}
-                        </h3>
-
-                        {/* Description */}
-                        <p className="text-[14px] text-on-surface-variant leading-relaxed line-clamp-3 flex-1">
-                          {herb.description}
-                        </p>
-
-                        {/* Properties — plain text separated by dots, no colored boxes */}
-                        {herb.medicinal_properties.length > 0 && (
-                          <p
-                            className="text-[12px] text-on-surface-variant pt-1"
-                            style={{ fontFamily: "var(--font-work-sans)" }}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeLetter ?? "all"}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                  {visibleHerbs.map((herb, i) => {
+                    const photo = STITCH_PHOTOS[herb.slug];
+                    return (
+                      <motion.div
+                        key={herb.slug}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.06, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      >
+                        <CardHover className="h-full">
+                          <Link
+                            href={`/herbs/${herb.slug}`}
+                            className="group rounded-2xl bg-surface-lowest overflow-hidden flex flex-col shadow-ambient h-full"
                           >
-                            {herb.medicinal_properties.slice(0, 4).join(" · ")}
-                          </p>
-                        )}
+                            {/* Photo */}
+                            {photo && (
+                              <div className="relative h-52 overflow-hidden">
+                                <img
+                                  src={photo}
+                                  alt={herb.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  loading="lazy"
+                                />
+                              </div>
+                            )}
 
-                        <span className="flex items-center gap-1 text-[13px] font-semibold text-primary-container mt-1 group-hover:underline">
-                          View Monograph <ArrowRight size={13} />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                            <div className="p-6 flex flex-col gap-3 flex-1">
+                              <h3 className="font-serif font-bold text-[22px] text-on-surface leading-snug group-hover:text-primary-container transition-colors duration-200">
+                                {herb.name}
+                              </h3>
+
+                              <p className="text-[14px] text-on-surface-variant leading-relaxed line-clamp-3 flex-1">
+                                {herb.description}
+                              </p>
+
+                              {herb.medicinal_properties.length > 0 && (
+                                <p
+                                  className="text-[12px] text-on-surface-variant pt-1"
+                                  style={{ fontFamily: "var(--font-work-sans)" }}
+                                >
+                                  {herb.medicinal_properties.slice(0, 4).join(" · ")}
+                                </p>
+                              )}
+
+                              <span className="flex items-center gap-1 text-[13px] font-semibold text-primary-container mt-1 group-hover:underline">
+                                View Monograph <ArrowRight size={13} />
+                              </span>
+                            </div>
+                          </Link>
+                        </CardHover>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              </AnimatePresence>
 
               {/* Load More */}
               {hasMore && (
